@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:school_core/school_core.dart';
 
 import 'data/app_scope.dart';
+import 'data/auth_service.dart';
 import 'sync/sync_service.dart';
 import 'screens/attendance_screen.dart';
 import 'screens/dashboard_screen.dart';
+import 'screens/login_screen.dart';
 import 'widgets/sync_status_bar.dart';
 
 class AdminApp extends StatefulWidget {
@@ -18,8 +20,19 @@ class AdminApp extends StatefulWidget {
 }
 
 class _AdminAppState extends State<AdminApp> {
+  final _auth = AuthService();
+
+  @override
+  void initState() {
+    super.initState();
+    // Not awaited: this waits on Supabase coming up, which may involve the
+    // network. The window is already on screen by then.
+    _auth.restore();
+  }
+
   @override
   void dispose() {
+    _auth.dispose();
     widget.sync.dispose();
     widget.database.close();
     super.dispose();
@@ -37,10 +50,25 @@ class _AdminAppState extends State<AdminApp> {
           colorSchemeSeed: const Color(0xFF1E40AF),
           useMaterial3: true,
         ),
-        home: const AdminShell(),
+        home: AnimatedBuilder(
+          animation: _auth,
+          builder: (context, _) => switch (_auth.state) {
+            AuthState.checking => const _Splash(),
+            AuthState.signedIn || AuthState.localOnly => AdminShell(auth: _auth),
+            _ => LoginScreen(auth: _auth),
+          },
+        ),
       ),
     );
   }
+}
+
+class _Splash extends StatelessWidget {
+  const _Splash();
+
+  @override
+  Widget build(BuildContext context) =>
+      const Scaffold(body: Center(child: CircularProgressIndicator()));
 }
 
 /// Sections of the admin app, per CLAUDE.md §9.
@@ -61,7 +89,9 @@ enum AdminSection {
 }
 
 class AdminShell extends StatefulWidget {
-  const AdminShell({super.key});
+  const AdminShell({required this.auth, super.key});
+
+  final AuthService auth;
 
   @override
   State<AdminShell> createState() => _AdminShellState();
@@ -86,6 +116,25 @@ class _AdminShellState extends State<AdminShell> {
                   leading: const Padding(
                     padding: EdgeInsets.symmetric(vertical: 16),
                     child: Icon(Icons.account_balance, size: 28),
+                  ),
+                  trailing: Expanded(
+                    child: Align(
+                      alignment: Alignment.bottomCenter,
+                      child: Padding(
+                        padding: const EdgeInsets.only(bottom: 16),
+                        child: IconButton(
+                          tooltip: widget.auth.isSignedIn
+                              ? 'Sign out (${widget.auth.user?.email})'
+                              : 'Working offline — sign in',
+                          icon: Icon(
+                            widget.auth.isSignedIn
+                                ? Icons.logout
+                                : Icons.person_off_outlined,
+                          ),
+                          onPressed: widget.auth.signOut,
+                        ),
+                      ),
+                    ),
                   ),
                   destinations: [
                     for (final section in AdminSection.values)
