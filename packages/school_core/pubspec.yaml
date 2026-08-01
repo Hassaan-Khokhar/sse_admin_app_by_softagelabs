@@ -1,0 +1,23 @@
+name: school_core
+description: >-
+  Shared contract for the SSE school management system: the Drift schema that
+  mirrors schema.sql, the sync engine, and the domain rules both the admin
+  desktop app and the student mobile app must agree on.
+version: 0.1.0
+publish_to: none
+
+# Pure Dart, deliberately NOT a Flutter package — both apps depend on it, and
+# `dart test` on plain Dart is far faster than spinning up the Flutter harness.
+# Each app supplies its own drift QueryExecutor (see AppDatabase docs).
+environment:
+  sdk: ^3.11.0
+
+dependencies:
+  drift: ^2.34.3
+  uuid: ^4.6.0
+
+dev_dependencies:
+  build_runner: ^2.16.0
+  drift_dev: ^2.34.3
+  lints: ^6.1.0
+  test: ^1.31.2

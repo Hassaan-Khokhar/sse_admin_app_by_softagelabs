@@ -473,6 +473,9 @@ CREATE TABLE lost_items (
     photos          JSONB DEFAULT '[]',         -- [{key,url,thumb_url}]
     expires_at      TIMESTAMPTZ,                -- auto-archive after 30 days
 
+    -- Feed ordering key. Deliberately NOT updated_at: moderation and the
+    -- report counter bump updated_at, which would reshuffle the feed.
+    created_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
     updated_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
     deleted_at      TIMESTAMPTZ,
     server_seq      BIGINT,
