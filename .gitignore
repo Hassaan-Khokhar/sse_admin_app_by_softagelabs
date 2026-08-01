@@ -1,0 +1,59 @@
+# ============================================================================
+#  SECRETS — never commit these
+# ============================================================================
+.env
+.env.local
+.env.*.local
+env.json
+*.pem
+*.key
+
+# ============================================================================
+#  Local databases (dev/test data — each device has its own)
+# ============================================================================
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+*.sqlite
+*.sqlite3
+backups/
+
+# ============================================================================
+#  Flutter / Dart
+# ============================================================================
+.dart_tool/
+.packages
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+generated_plugin_registrant.dart
+
+# Drift generated files are usually committed — if you decide otherwise:
+# *.g.dart
+
+# ============================================================================
+#  Windows desktop build
+# ============================================================================
+windows/flutter/ephemeral/
+windows/**/Generated.xcconfig
+
+# ============================================================================
+#  Editors / OS
+# ============================================================================
+.idea/
+*.iml
+*.iws
+.vscode/*
+!.vscode/settings.json
+!.vscode/launch.json
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ============================================================================
+#  Misc
+# ============================================================================
+*.log
+coverage/
+.scratch/
