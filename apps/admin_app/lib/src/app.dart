@@ -182,7 +182,7 @@ class _AdminShellState extends State<AdminShell> {
   Widget _buildSection() => switch (_section) {
         AdminSection.dashboard => const DashboardScreen(),
         AdminSection.attendance => const AttendanceScreen(),
-        AdminSection.faculty => const FacultyScreen(),
+        AdminSection.faculty => const FacultyAttendanceView(),
         _ => _NotBuiltYet(section: _section),
       };
 }

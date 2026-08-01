@@ -11,14 +11,14 @@ import '../widgets/status_chip.dart';
 /// Same interaction as the student register: tap a chip and it is written
 /// immediately to local SQLite and the outbox. No Save button, because there
 /// is nothing left to save.
-class FacultyScreen extends StatefulWidget {
-  const FacultyScreen({super.key});
+class FacultyAttendanceView extends StatefulWidget {
+  const FacultyAttendanceView({super.key});
 
   @override
-  State<FacultyScreen> createState() => _FacultyScreenState();
+  State<FacultyAttendanceView> createState() => _FacultyAttendanceViewState();
 }
 
-class _FacultyScreenState extends State<FacultyScreen> {
+class _FacultyAttendanceViewState extends State<FacultyAttendanceView> {
   late final FacultyRepository _repo;
   DateTime _date = dateOnly(DateTime.now());
   bool _busy = false;

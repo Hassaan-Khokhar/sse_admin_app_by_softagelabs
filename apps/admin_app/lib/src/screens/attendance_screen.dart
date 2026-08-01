@@ -4,8 +4,58 @@ import 'package:school_core/school_core.dart';
 import '../data/app_scope.dart';
 import '../data/attendance_repository.dart';
 import '../widgets/status_chip.dart';
+import 'faculty_screen.dart';
 
-/// Daily attendance register — the screen the demo video is built around
+/// Attendance — both registers, students and faculty, under one section.
+///
+/// They are tabs rather than separate nav entries because they are the same
+/// job done twice each morning. A principal thinking "let me take attendance"
+/// should land in one place and choose who, not remember which of two sections
+/// holds which register.
+class AttendanceScreen extends StatelessWidget {
+  const AttendanceScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return DefaultTabController(
+      length: 2,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(24, 20, 24, 0),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: Text(
+                'Attendance',
+                style: Theme.of(context).textTheme.headlineSmall,
+              ),
+            ),
+          ),
+          const TabBar(
+            isScrollable: true,
+            tabAlignment: TabAlignment.start,
+            tabs: [
+              Tab(icon: Icon(Icons.people_outline, size: 18), text: 'Students'),
+              Tab(icon: Icon(Icons.badge_outlined, size: 18), text: 'Faculty'),
+            ],
+          ),
+          const Divider(height: 1),
+          const Expanded(
+            child: TabBarView(
+              children: [
+                StudentAttendanceView(),
+                FacultyAttendanceView(),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Daily student register — the screen the demo video is built around
 /// (CLAUDE.md §12, 0:30: wifi off on camera, then mark 40 students).
 ///
 /// Two things drive the design:
@@ -16,14 +66,14 @@ import '../widgets/status_chip.dart';
 ///   * **Every tap writes immediately** to local SQLite and the outbox. There
 ///     is no Save button, because there is nothing to save to — the write
 ///     already happened, offline, in a transaction.
-class AttendanceScreen extends StatefulWidget {
-  const AttendanceScreen({super.key});
+class StudentAttendanceView extends StatefulWidget {
+  const StudentAttendanceView({super.key});
 
   @override
-  State<AttendanceScreen> createState() => _AttendanceScreenState();
+  State<StudentAttendanceView> createState() => _AttendanceScreenState();
 }
 
-class _AttendanceScreenState extends State<AttendanceScreen> {
+class _AttendanceScreenState extends State<StudentAttendanceView> {
   late final AttendanceRepository _repo;
   String? _classId;
   DateTime _date = dateOnly(DateTime.now());
@@ -183,11 +233,9 @@ class _Toolbar extends StatelessWidget {
     final isToday = date == today;
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(24, 20, 24, 12),
+      padding: const EdgeInsets.fromLTRB(24, 16, 24, 12),
       child: Row(
         children: [
-          Text('Attendance', style: Theme.of(context).textTheme.headlineSmall),
-          const SizedBox(width: 24),
           DropdownButton<String>(
             value: selectedClassId,
             onChanged: (id) => id == null ? null : onClassChanged(id),

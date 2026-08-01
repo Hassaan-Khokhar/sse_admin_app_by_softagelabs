@@ -23,6 +23,34 @@ class SyncService {
       _onPendingCountChanged,
       onError: (Object error) => _fail(error.toString()),
     );
+    _startAutoSync();
+  }
+
+  /// Sync runs on its own; the status bar is a readout, not a button.
+  ///
+  /// The demo beat at CLAUDE.md §12 1:05 is "turn the wifi back on → ✓ Synced
+  /// just now". Nobody presses anything. If a principal had to remember to
+  /// click sync, half a morning of attendance would sit unpushed and the first
+  /// anyone would know is a parent asking why the app shows nothing.
+  ///
+  /// The interval is short because the connection is the unreliable part: when
+  /// it returns, we want to be inside a minute of noticing.
+  static const _autoSyncInterval = Duration(seconds: 30);
+
+  void _startAutoSync() {
+    _autoSyncTimer?.cancel();
+    _autoSyncTimer = Timer.periodic(_autoSyncInterval, (_) => _autoSync());
+    // Also try once at startup — the app may be opening after hours offline
+    // with a full outbox.
+    Future<void>.delayed(const Duration(seconds: 3), _autoSync);
+  }
+
+  Future<void> _autoSync() async {
+    if (_status.phase == SyncPhase.syncing) return;
+    // Nothing queued and we have synced recently: pull anyway, but not on
+    // every tick — the server is the only source of student-app changes
+    // (lost & found posts), and those should appear without a restart.
+    await syncNow(silent: true);
   }
 
   final AppDatabase _db;
@@ -31,6 +59,7 @@ class SyncService {
   StreamSubscription<int>? _pendingSubscription;
   SyncStatus _status = const SyncStatus.idle();
   Timer? _relabelTimer;
+  Timer? _autoSyncTimer;
 
   /// Current status. Safe to read synchronously for the first frame.
   SyncStatus get status => _status;
@@ -92,11 +121,23 @@ class SyncService {
   /// **Push before pull, always** (CLAUDE.md §10). Pulling first would fetch
   /// the server's stale copy of a row that was just changed locally and
   /// overwrite the local edit — the principal's change would silently vanish.
-  Future<void> syncNow() async {
+  ///
+  /// [silent] suppresses the error state for background attempts. A timer tick
+  /// that finds no internet should not paint the bar red — being offline is
+  /// the expected condition here, and a bar that cries wolf every 30 seconds
+  /// is a bar nobody reads. Manual attempts always report.
+  Future<void> syncNow({bool silent = false}) async {
     if (_status.phase == SyncPhase.syncing) return;
 
     if (!await SupabaseBootstrap.ready) {
-      _fail('No connection — changes stay queued.');
+      if (!silent) _fail('No connection — changes stay queued.');
+      return;
+    }
+
+    // Not signed in means every write is denied by RLS. Say so rather than
+    // letting the request fail with a 401 the principal cannot interpret.
+    if (SupabaseBootstrap.client.auth.currentUser == null) {
+      if (!silent) _fail('Sign in to sync. Changes are safe and stay queued.');
       return;
     }
 
@@ -127,6 +168,10 @@ class SyncService {
     } on Object catch (error) {
       // Nothing is lost on failure: un-pushed rows are still in the outbox and
       // the cursor is not advanced, so the next attempt repeats the work.
+      //
+      // Errors are surfaced even on a silent run. A silent attempt hides
+      // "you're offline", which is routine; it must not hide "the server
+      // rejected your data", which is a bug someone needs to see.
       _fail(_readable(error));
     }
   }
@@ -160,6 +205,7 @@ class SyncService {
   }
 
   Future<void> dispose() async {
+    _autoSyncTimer?.cancel();
     _relabelTimer?.cancel();
     await _pendingSubscription?.cancel();
     await _controller.close();
