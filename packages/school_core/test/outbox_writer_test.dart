@@ -1,6 +1,8 @@
 import 'dart:convert';
 
-import 'package:drift/drift.dart';
+// drift exports SQL helpers named `isNull` / `isNotNull` that shadow the
+// matchers of the same name. The matchers are what a test file wants.
+import 'package:drift/drift.dart' hide isNull, isNotNull;
 import 'package:drift/native.dart';
 import 'package:school_core/school_core.dart';
 import 'package:test/test.dart';

@@ -121,13 +121,21 @@ class _CountTile extends StatelessWidget {
   }
 }
 
-/// DEV TOOL — queues and clears outbox rows so the sync status bar can be
-/// exercised before the real sync transport exists.
+/// DEV TOOLS — seeding and sync-bar probes.
 ///
-/// Remove this before filming. It writes to the real outbox table, which is
-/// harmless while nothing drains it, but it is not a feature.
-class _OutboxProbe extends StatelessWidget {
+/// Remove the outbox probes before filming. The seeder stays: CLAUDE.md §12
+/// requires realistic data on screen, and it is how the demo database gets
+/// built in the first place.
+class _OutboxProbe extends StatefulWidget {
   const _OutboxProbe();
+
+  @override
+  State<_OutboxProbe> createState() => _OutboxProbeState();
+}
+
+class _OutboxProbeState extends State<_OutboxProbe> {
+  bool _busy = false;
+  String? _message;
 
   @override
   Widget build(BuildContext context) {
@@ -145,47 +153,79 @@ class _OutboxProbe extends StatelessWidget {
               children: [
                 const Icon(Icons.science_outlined, size: 18),
                 const SizedBox(width: 8),
-                Text('Dev tool — exercise the sync bar',
-                    style: theme.textTheme.titleSmall),
+                Text('Dev tools', style: theme.textTheme.titleSmall),
               ],
             ),
             const SizedBox(height: 4),
             Text(
-              'Real sync is not built yet. These buttons queue and clear '
-              'outbox rows so the status bar can be verified. Delete before '
-              'filming.',
+              'Seed builds ~50 students across 9-A, 9-B and 10-A with two '
+              'months of back-dated attendance. The outbox buttons exist only '
+              'to exercise the sync bar until the real transport is built.',
               style: theme.textTheme.bodySmall,
             ),
             const SizedBox(height: 12),
-            Row(
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
               children: [
-                FilledButton.tonal(
-                  onPressed: () => _queue(db, 1),
-                  child: const Text('Queue 1'),
+                FilledButton.icon(
+                  onPressed: _busy ? null : () => _seed(db),
+                  icon: _busy
+                      ? const SizedBox(
+                          width: 14,
+                          height: 14,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : const Icon(Icons.auto_awesome, size: 18),
+                  label: const Text('Seed demo data'),
                 ),
-                const SizedBox(width: 8),
                 FilledButton.tonal(
-                  // 40 is the number from the demo script: a class of 40
-                  // students marked with the wifi off (CLAUDE.md §12, 0:30).
-                  onPressed: () => _queue(db, 40),
+                  // 40 is the number from the demo script: a class marked with
+                  // the wifi off (CLAUDE.md §12, 0:30).
+                  onPressed: _busy ? null : () => _queue(db, 40),
                   child: const Text('Queue 40'),
                 ),
-                const SizedBox(width: 8),
                 OutlinedButton(
-                  onPressed: () => db.delete(db.outbox).go(),
+                  onPressed: _busy ? null : () => db.delete(db.outbox).go(),
                   child: const Text('Clear outbox'),
+                ),
+                OutlinedButton(
+                  onPressed: _busy ? null : () => _wipe(db),
+                  child: const Text('Wipe local data'),
                 ),
               ],
             ),
+            if (_message case final message?) ...[
+              const SizedBox(height: 10),
+              Text(message, style: theme.textTheme.bodySmall),
+            ],
           ],
         ),
       ),
     );
   }
 
+  Future<void> _seed(AppDatabase db) async {
+    setState(() {
+      _busy = true;
+      _message = 'Seeding…';
+    });
+    final watch = Stopwatch()..start();
+    try {
+      await DemoSeeder(db).seed();
+      if (mounted) {
+        setState(() => _message = 'Seeded in ${watch.elapsedMilliseconds} ms');
+      }
+    } on Object catch (error) {
+      if (mounted) setState(() => _message = 'Seed failed: $error');
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
+  }
+
   Future<void> _queue(AppDatabase db, int count) async {
-    // One transaction, as every real local write will be: the row and its
-    // outbox entry must land together or not at all (CLAUDE.md §10).
+    // One transaction, as every real local write is: the row and its outbox
+    // entry must land together or not at all (CLAUDE.md §10).
     await db.transaction(() async {
       for (var i = 0; i < count; i++) {
         await db.into(db.outbox).insert(
@@ -200,5 +240,29 @@ class _OutboxProbe extends StatelessWidget {
             );
       }
     });
+  }
+
+  /// Clears local data so seeding can be demonstrated from scratch.
+  ///
+  /// Local only — this is a dev tool, not the withdraw flow. Real removals are
+  /// tombstones (schema.sql convention 3), never deletes.
+  Future<void> _wipe(AppDatabase db) async {
+    setState(() => _busy = true);
+    await db.transaction(() async {
+      await db.delete(db.attendance).go();
+      await db.delete(db.students).go();
+      await db.delete(db.subjects).go();
+      await db.delete(db.classes).go();
+      await db.delete(db.academicYears).go();
+      await db.delete(db.appUsers).go();
+      await db.delete(db.schools).go();
+      await db.delete(db.outbox).go();
+    });
+    if (mounted) {
+      setState(() {
+        _busy = false;
+        _message = 'Local data wiped';
+      });
+    }
   }
 }

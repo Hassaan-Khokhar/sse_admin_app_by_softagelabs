@@ -26,6 +26,8 @@ export 'src/db/tables/lost_found.dart';
 export 'src/db/tables/people.dart';
 export 'src/db/tables/reference.dart';
 export 'src/db/tables/sync_columns.dart';
+export 'src/demo/demo_names.dart';
+export 'src/demo/demo_seed.dart';
 export 'src/enums.dart';
 export 'src/grading.dart';
 export 'src/ids.dart';

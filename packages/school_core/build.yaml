@@ -1,0 +1,17 @@
+targets:
+  $default:
+    builders:
+      drift_dev:
+        options:
+          # Serialise using the SQL column names (student_id), not the Dart
+          # field names (studentId).
+          #
+          # This is a correctness requirement, not a style choice. The JSON
+          # produced by `toJson()` is the outbox payload that gets pushed to
+          # Postgres, and PostgREST matches on actual column names. With the
+          # default, every multi-word column — student_id, admission_no,
+          # obtained_marks — would silently arrive as null.
+          #
+          # It also keeps the payload identical to what the student app sends,
+          # which matters because both apps write to the same tables.
+          use_sql_column_name_as_json_key: true

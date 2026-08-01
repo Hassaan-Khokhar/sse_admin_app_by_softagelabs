@@ -331,30 +331,30 @@ class School extends DataClass implements Insertable<School> {
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return School(
-      updatedAt: serializer.fromJson<String>(json['updatedAt']),
-      deletedAt: serializer.fromJson<String?>(json['deletedAt']),
-      serverSeq: serializer.fromJson<int?>(json['serverSeq']),
+      updatedAt: serializer.fromJson<String>(json['updated_at']),
+      deletedAt: serializer.fromJson<String?>(json['deleted_at']),
+      serverSeq: serializer.fromJson<int?>(json['server_seq']),
       version: serializer.fromJson<int>(json['version']),
       id: serializer.fromJson<String>(json['id']),
       name: serializer.fromJson<String>(json['name']),
       address: serializer.fromJson<String?>(json['address']),
       phone: serializer.fromJson<String?>(json['phone']),
-      logoUrl: serializer.fromJson<String?>(json['logoUrl']),
+      logoUrl: serializer.fromJson<String?>(json['logo_url']),
     );
   }
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
-      'updatedAt': serializer.toJson<String>(updatedAt),
-      'deletedAt': serializer.toJson<String?>(deletedAt),
-      'serverSeq': serializer.toJson<int?>(serverSeq),
+      'updated_at': serializer.toJson<String>(updatedAt),
+      'deleted_at': serializer.toJson<String?>(deletedAt),
+      'server_seq': serializer.toJson<int?>(serverSeq),
       'version': serializer.toJson<int>(version),
       'id': serializer.toJson<String>(id),
       'name': serializer.toJson<String>(name),
       'address': serializer.toJson<String?>(address),
       'phone': serializer.toJson<String?>(phone),
-      'logoUrl': serializer.toJson<String?>(logoUrl),
+      'logo_url': serializer.toJson<String?>(logoUrl),
     };
   }
 
@@ -938,32 +938,32 @@ class AcademicYear extends DataClass implements Insertable<AcademicYear> {
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return AcademicYear(
-      updatedAt: serializer.fromJson<String>(json['updatedAt']),
-      deletedAt: serializer.fromJson<String?>(json['deletedAt']),
-      serverSeq: serializer.fromJson<int?>(json['serverSeq']),
+      updatedAt: serializer.fromJson<String>(json['updated_at']),
+      deletedAt: serializer.fromJson<String?>(json['deleted_at']),
+      serverSeq: serializer.fromJson<int?>(json['server_seq']),
       version: serializer.fromJson<int>(json['version']),
       id: serializer.fromJson<String>(json['id']),
-      schoolId: serializer.fromJson<String>(json['schoolId']),
+      schoolId: serializer.fromJson<String>(json['school_id']),
       name: serializer.fromJson<String>(json['name']),
-      startDate: serializer.fromJson<String>(json['startDate']),
-      endDate: serializer.fromJson<String>(json['endDate']),
-      isCurrent: serializer.fromJson<bool>(json['isCurrent']),
+      startDate: serializer.fromJson<String>(json['start_date']),
+      endDate: serializer.fromJson<String>(json['end_date']),
+      isCurrent: serializer.fromJson<bool>(json['is_current']),
     );
   }
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
-      'updatedAt': serializer.toJson<String>(updatedAt),
-      'deletedAt': serializer.toJson<String?>(deletedAt),
-      'serverSeq': serializer.toJson<int?>(serverSeq),
+      'updated_at': serializer.toJson<String>(updatedAt),
+      'deleted_at': serializer.toJson<String?>(deletedAt),
+      'server_seq': serializer.toJson<int?>(serverSeq),
       'version': serializer.toJson<int>(version),
       'id': serializer.toJson<String>(id),
-      'schoolId': serializer.toJson<String>(schoolId),
+      'school_id': serializer.toJson<String>(schoolId),
       'name': serializer.toJson<String>(name),
-      'startDate': serializer.toJson<String>(startDate),
-      'endDate': serializer.toJson<String>(endDate),
-      'isCurrent': serializer.toJson<bool>(isCurrent),
+      'start_date': serializer.toJson<String>(startDate),
+      'end_date': serializer.toJson<String>(endDate),
+      'is_current': serializer.toJson<bool>(isCurrent),
     };
   }
 
@@ -1635,17 +1635,17 @@ class SchoolClass extends DataClass implements Insertable<SchoolClass> {
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return SchoolClass(
-      updatedAt: serializer.fromJson<String>(json['updatedAt']),
-      deletedAt: serializer.fromJson<String?>(json['deletedAt']),
-      serverSeq: serializer.fromJson<int?>(json['serverSeq']),
+      updatedAt: serializer.fromJson<String>(json['updated_at']),
+      deletedAt: serializer.fromJson<String?>(json['deleted_at']),
+      serverSeq: serializer.fromJson<int?>(json['server_seq']),
       version: serializer.fromJson<int>(json['version']),
       id: serializer.fromJson<String>(json['id']),
-      schoolId: serializer.fromJson<String>(json['schoolId']),
-      academicYearId: serializer.fromJson<String>(json['academicYearId']),
+      schoolId: serializer.fromJson<String>(json['school_id']),
+      academicYearId: serializer.fromJson<String>(json['academic_year_id']),
       grade: serializer.fromJson<int>(json['grade']),
       section: serializer.fromJson<String>(json['section']),
-      displayName: serializer.fromJson<String>(json['displayName']),
-      classTeacherId: serializer.fromJson<String?>(json['classTeacherId']),
+      displayName: serializer.fromJson<String>(json['display_name']),
+      classTeacherId: serializer.fromJson<String?>(json['class_teacher_id']),
       room: serializer.fromJson<String?>(json['room']),
     );
   }
@@ -1653,17 +1653,17 @@ class SchoolClass extends DataClass implements Insertable<SchoolClass> {
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
-      'updatedAt': serializer.toJson<String>(updatedAt),
-      'deletedAt': serializer.toJson<String?>(deletedAt),
-      'serverSeq': serializer.toJson<int?>(serverSeq),
+      'updated_at': serializer.toJson<String>(updatedAt),
+      'deleted_at': serializer.toJson<String?>(deletedAt),
+      'server_seq': serializer.toJson<int?>(serverSeq),
       'version': serializer.toJson<int>(version),
       'id': serializer.toJson<String>(id),
-      'schoolId': serializer.toJson<String>(schoolId),
-      'academicYearId': serializer.toJson<String>(academicYearId),
+      'school_id': serializer.toJson<String>(schoolId),
+      'academic_year_id': serializer.toJson<String>(academicYearId),
       'grade': serializer.toJson<int>(grade),
       'section': serializer.toJson<String>(section),
-      'displayName': serializer.toJson<String>(displayName),
-      'classTeacherId': serializer.toJson<String?>(classTeacherId),
+      'display_name': serializer.toJson<String>(displayName),
+      'class_teacher_id': serializer.toJson<String?>(classTeacherId),
       'room': serializer.toJson<String?>(room),
     };
   }
@@ -2390,18 +2390,18 @@ class Subject extends DataClass implements Insertable<Subject> {
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return Subject(
-      updatedAt: serializer.fromJson<String>(json['updatedAt']),
-      deletedAt: serializer.fromJson<String?>(json['deletedAt']),
-      serverSeq: serializer.fromJson<int?>(json['serverSeq']),
+      updatedAt: serializer.fromJson<String>(json['updated_at']),
+      deletedAt: serializer.fromJson<String?>(json['deleted_at']),
+      serverSeq: serializer.fromJson<int?>(json['server_seq']),
       version: serializer.fromJson<int>(json['version']),
       id: serializer.fromJson<String>(json['id']),
-      schoolId: serializer.fromJson<String>(json['schoolId']),
-      classId: serializer.fromJson<String>(json['classId']),
+      schoolId: serializer.fromJson<String>(json['school_id']),
+      classId: serializer.fromJson<String>(json['class_id']),
       name: serializer.fromJson<String>(json['name']),
       code: serializer.fromJson<String?>(json['code']),
-      teacherId: serializer.fromJson<String?>(json['teacherId']),
-      totalMarks: serializer.fromJson<int>(json['totalMarks']),
-      sortOrder: serializer.fromJson<int>(json['sortOrder']),
+      teacherId: serializer.fromJson<String?>(json['teacher_id']),
+      totalMarks: serializer.fromJson<int>(json['total_marks']),
+      sortOrder: serializer.fromJson<int>(json['sort_order']),
       icon: serializer.fromJson<String?>(json['icon']),
     );
   }
@@ -2409,18 +2409,18 @@ class Subject extends DataClass implements Insertable<Subject> {
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
-      'updatedAt': serializer.toJson<String>(updatedAt),
-      'deletedAt': serializer.toJson<String?>(deletedAt),
-      'serverSeq': serializer.toJson<int?>(serverSeq),
+      'updated_at': serializer.toJson<String>(updatedAt),
+      'deleted_at': serializer.toJson<String?>(deletedAt),
+      'server_seq': serializer.toJson<int?>(serverSeq),
       'version': serializer.toJson<int>(version),
       'id': serializer.toJson<String>(id),
-      'schoolId': serializer.toJson<String>(schoolId),
-      'classId': serializer.toJson<String>(classId),
+      'school_id': serializer.toJson<String>(schoolId),
+      'class_id': serializer.toJson<String>(classId),
       'name': serializer.toJson<String>(name),
       'code': serializer.toJson<String?>(code),
-      'teacherId': serializer.toJson<String?>(teacherId),
-      'totalMarks': serializer.toJson<int>(totalMarks),
-      'sortOrder': serializer.toJson<int>(sortOrder),
+      'teacher_id': serializer.toJson<String?>(teacherId),
+      'total_marks': serializer.toJson<int>(totalMarks),
+      'sort_order': serializer.toJson<int>(sortOrder),
       'icon': serializer.toJson<String?>(icon),
     };
   }
@@ -3140,36 +3140,36 @@ class AppUser extends DataClass implements Insertable<AppUser> {
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return AppUser(
-      updatedAt: serializer.fromJson<String>(json['updatedAt']),
-      deletedAt: serializer.fromJson<String?>(json['deletedAt']),
-      serverSeq: serializer.fromJson<int?>(json['serverSeq']),
+      updatedAt: serializer.fromJson<String>(json['updated_at']),
+      deletedAt: serializer.fromJson<String?>(json['deleted_at']),
+      serverSeq: serializer.fromJson<int?>(json['server_seq']),
       version: serializer.fromJson<int>(json['version']),
       id: serializer.fromJson<String>(json['id']),
-      schoolId: serializer.fromJson<String>(json['schoolId']),
+      schoolId: serializer.fromJson<String>(json['school_id']),
       role: serializer.fromJson<String>(json['role']),
       email: serializer.fromJson<String?>(json['email']),
       phone: serializer.fromJson<String?>(json['phone']),
-      fullName: serializer.fromJson<String>(json['fullName']),
-      isActive: serializer.fromJson<bool>(json['isActive']),
-      lastLoginAt: serializer.fromJson<String?>(json['lastLoginAt']),
+      fullName: serializer.fromJson<String>(json['full_name']),
+      isActive: serializer.fromJson<bool>(json['is_active']),
+      lastLoginAt: serializer.fromJson<String?>(json['last_login_at']),
     );
   }
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
-      'updatedAt': serializer.toJson<String>(updatedAt),
-      'deletedAt': serializer.toJson<String?>(deletedAt),
-      'serverSeq': serializer.toJson<int?>(serverSeq),
+      'updated_at': serializer.toJson<String>(updatedAt),
+      'deleted_at': serializer.toJson<String?>(deletedAt),
+      'server_seq': serializer.toJson<int?>(serverSeq),
       'version': serializer.toJson<int>(version),
       'id': serializer.toJson<String>(id),
-      'schoolId': serializer.toJson<String>(schoolId),
+      'school_id': serializer.toJson<String>(schoolId),
       'role': serializer.toJson<String>(role),
       'email': serializer.toJson<String?>(email),
       'phone': serializer.toJson<String?>(phone),
-      'fullName': serializer.toJson<String>(fullName),
-      'isActive': serializer.toJson<bool>(isActive),
-      'lastLoginAt': serializer.toJson<String?>(lastLoginAt),
+      'full_name': serializer.toJson<String>(fullName),
+      'is_active': serializer.toJson<bool>(isActive),
+      'last_login_at': serializer.toJson<String?>(lastLoginAt),
     };
   }
 
@@ -3963,42 +3963,42 @@ class Teacher extends DataClass implements Insertable<Teacher> {
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return Teacher(
-      updatedAt: serializer.fromJson<String>(json['updatedAt']),
-      deletedAt: serializer.fromJson<String?>(json['deletedAt']),
-      serverSeq: serializer.fromJson<int?>(json['serverSeq']),
+      updatedAt: serializer.fromJson<String>(json['updated_at']),
+      deletedAt: serializer.fromJson<String?>(json['deleted_at']),
+      serverSeq: serializer.fromJson<int?>(json['server_seq']),
       version: serializer.fromJson<int>(json['version']),
       id: serializer.fromJson<String>(json['id']),
-      userId: serializer.fromJson<String?>(json['userId']),
-      schoolId: serializer.fromJson<String>(json['schoolId']),
-      employeeNo: serializer.fromJson<String?>(json['employeeNo']),
-      fullName: serializer.fromJson<String>(json['fullName']),
+      userId: serializer.fromJson<String?>(json['user_id']),
+      schoolId: serializer.fromJson<String>(json['school_id']),
+      employeeNo: serializer.fromJson<String?>(json['employee_no']),
+      fullName: serializer.fromJson<String>(json['full_name']),
       cnic: serializer.fromJson<String?>(json['cnic']),
       phone: serializer.fromJson<String?>(json['phone']),
       qualification: serializer.fromJson<String?>(json['qualification']),
-      joiningDate: serializer.fromJson<String?>(json['joiningDate']),
-      photoUrl: serializer.fromJson<String?>(json['photoUrl']),
-      isActive: serializer.fromJson<bool>(json['isActive']),
+      joiningDate: serializer.fromJson<String?>(json['joining_date']),
+      photoUrl: serializer.fromJson<String?>(json['photo_url']),
+      isActive: serializer.fromJson<bool>(json['is_active']),
     );
   }
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
-      'updatedAt': serializer.toJson<String>(updatedAt),
-      'deletedAt': serializer.toJson<String?>(deletedAt),
-      'serverSeq': serializer.toJson<int?>(serverSeq),
+      'updated_at': serializer.toJson<String>(updatedAt),
+      'deleted_at': serializer.toJson<String?>(deletedAt),
+      'server_seq': serializer.toJson<int?>(serverSeq),
       'version': serializer.toJson<int>(version),
       'id': serializer.toJson<String>(id),
-      'userId': serializer.toJson<String?>(userId),
-      'schoolId': serializer.toJson<String>(schoolId),
-      'employeeNo': serializer.toJson<String?>(employeeNo),
-      'fullName': serializer.toJson<String>(fullName),
+      'user_id': serializer.toJson<String?>(userId),
+      'school_id': serializer.toJson<String>(schoolId),
+      'employee_no': serializer.toJson<String?>(employeeNo),
+      'full_name': serializer.toJson<String>(fullName),
       'cnic': serializer.toJson<String?>(cnic),
       'phone': serializer.toJson<String?>(phone),
       'qualification': serializer.toJson<String?>(qualification),
-      'joiningDate': serializer.toJson<String?>(joiningDate),
-      'photoUrl': serializer.toJson<String?>(photoUrl),
-      'isActive': serializer.toJson<bool>(isActive),
+      'joining_date': serializer.toJson<String?>(joiningDate),
+      'photo_url': serializer.toJson<String?>(photoUrl),
+      'is_active': serializer.toJson<bool>(isActive),
     };
   }
 
@@ -4700,32 +4700,32 @@ class TeacherClassAssignment extends DataClass
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return TeacherClassAssignment(
-      updatedAt: serializer.fromJson<String>(json['updatedAt']),
-      deletedAt: serializer.fromJson<String?>(json['deletedAt']),
-      serverSeq: serializer.fromJson<int?>(json['serverSeq']),
+      updatedAt: serializer.fromJson<String>(json['updated_at']),
+      deletedAt: serializer.fromJson<String?>(json['deleted_at']),
+      serverSeq: serializer.fromJson<int?>(json['server_seq']),
       version: serializer.fromJson<int>(json['version']),
       id: serializer.fromJson<String>(json['id']),
-      schoolId: serializer.fromJson<String>(json['schoolId']),
-      teacherId: serializer.fromJson<String>(json['teacherId']),
-      classId: serializer.fromJson<String>(json['classId']),
-      subjectId: serializer.fromJson<String?>(json['subjectId']),
-      canMarkAttendance: serializer.fromJson<bool>(json['canMarkAttendance']),
+      schoolId: serializer.fromJson<String>(json['school_id']),
+      teacherId: serializer.fromJson<String>(json['teacher_id']),
+      classId: serializer.fromJson<String>(json['class_id']),
+      subjectId: serializer.fromJson<String?>(json['subject_id']),
+      canMarkAttendance: serializer.fromJson<bool>(json['can_mark_attendance']),
     );
   }
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
-      'updatedAt': serializer.toJson<String>(updatedAt),
-      'deletedAt': serializer.toJson<String?>(deletedAt),
-      'serverSeq': serializer.toJson<int?>(serverSeq),
+      'updated_at': serializer.toJson<String>(updatedAt),
+      'deleted_at': serializer.toJson<String?>(deletedAt),
+      'server_seq': serializer.toJson<int?>(serverSeq),
       'version': serializer.toJson<int>(version),
       'id': serializer.toJson<String>(id),
-      'schoolId': serializer.toJson<String>(schoolId),
-      'teacherId': serializer.toJson<String>(teacherId),
-      'classId': serializer.toJson<String>(classId),
-      'subjectId': serializer.toJson<String?>(subjectId),
-      'canMarkAttendance': serializer.toJson<bool>(canMarkAttendance),
+      'school_id': serializer.toJson<String>(schoolId),
+      'teacher_id': serializer.toJson<String>(teacherId),
+      'class_id': serializer.toJson<String>(classId),
+      'subject_id': serializer.toJson<String?>(subjectId),
+      'can_mark_attendance': serializer.toJson<bool>(canMarkAttendance),
     };
   }
 
@@ -5688,54 +5688,54 @@ class Student extends DataClass implements Insertable<Student> {
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return Student(
-      updatedAt: serializer.fromJson<String>(json['updatedAt']),
-      deletedAt: serializer.fromJson<String?>(json['deletedAt']),
-      serverSeq: serializer.fromJson<int?>(json['serverSeq']),
+      updatedAt: serializer.fromJson<String>(json['updated_at']),
+      deletedAt: serializer.fromJson<String?>(json['deleted_at']),
+      serverSeq: serializer.fromJson<int?>(json['server_seq']),
       version: serializer.fromJson<int>(json['version']),
       id: serializer.fromJson<String>(json['id']),
-      userId: serializer.fromJson<String?>(json['userId']),
-      schoolId: serializer.fromJson<String>(json['schoolId']),
-      classId: serializer.fromJson<String?>(json['classId']),
-      admissionNo: serializer.fromJson<String>(json['admissionNo']),
-      rollNo: serializer.fromJson<int?>(json['rollNo']),
-      fullName: serializer.fromJson<String>(json['fullName']),
-      fatherName: serializer.fromJson<String?>(json['fatherName']),
-      guardianPhone: serializer.fromJson<String?>(json['guardianPhone']),
-      dateOfBirth: serializer.fromJson<String?>(json['dateOfBirth']),
+      userId: serializer.fromJson<String?>(json['user_id']),
+      schoolId: serializer.fromJson<String>(json['school_id']),
+      classId: serializer.fromJson<String?>(json['class_id']),
+      admissionNo: serializer.fromJson<String>(json['admission_no']),
+      rollNo: serializer.fromJson<int?>(json['roll_no']),
+      fullName: serializer.fromJson<String>(json['full_name']),
+      fatherName: serializer.fromJson<String?>(json['father_name']),
+      guardianPhone: serializer.fromJson<String?>(json['guardian_phone']),
+      dateOfBirth: serializer.fromJson<String?>(json['date_of_birth']),
       gender: serializer.fromJson<String?>(json['gender']),
       address: serializer.fromJson<String?>(json['address']),
-      photoUrl: serializer.fromJson<String?>(json['photoUrl']),
-      admissionDate: serializer.fromJson<String?>(json['admissionDate']),
+      photoUrl: serializer.fromJson<String?>(json['photo_url']),
+      admissionDate: serializer.fromJson<String?>(json['admission_date']),
       status: serializer.fromJson<String>(json['status']),
-      leftDate: serializer.fromJson<String?>(json['leftDate']),
-      leftReason: serializer.fromJson<String?>(json['leftReason']),
+      leftDate: serializer.fromJson<String?>(json['left_date']),
+      leftReason: serializer.fromJson<String?>(json['left_reason']),
     );
   }
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
-      'updatedAt': serializer.toJson<String>(updatedAt),
-      'deletedAt': serializer.toJson<String?>(deletedAt),
-      'serverSeq': serializer.toJson<int?>(serverSeq),
+      'updated_at': serializer.toJson<String>(updatedAt),
+      'deleted_at': serializer.toJson<String?>(deletedAt),
+      'server_seq': serializer.toJson<int?>(serverSeq),
       'version': serializer.toJson<int>(version),
       'id': serializer.toJson<String>(id),
-      'userId': serializer.toJson<String?>(userId),
-      'schoolId': serializer.toJson<String>(schoolId),
-      'classId': serializer.toJson<String?>(classId),
-      'admissionNo': serializer.toJson<String>(admissionNo),
-      'rollNo': serializer.toJson<int?>(rollNo),
-      'fullName': serializer.toJson<String>(fullName),
-      'fatherName': serializer.toJson<String?>(fatherName),
-      'guardianPhone': serializer.toJson<String?>(guardianPhone),
-      'dateOfBirth': serializer.toJson<String?>(dateOfBirth),
+      'user_id': serializer.toJson<String?>(userId),
+      'school_id': serializer.toJson<String>(schoolId),
+      'class_id': serializer.toJson<String?>(classId),
+      'admission_no': serializer.toJson<String>(admissionNo),
+      'roll_no': serializer.toJson<int?>(rollNo),
+      'full_name': serializer.toJson<String>(fullName),
+      'father_name': serializer.toJson<String?>(fatherName),
+      'guardian_phone': serializer.toJson<String?>(guardianPhone),
+      'date_of_birth': serializer.toJson<String?>(dateOfBirth),
       'gender': serializer.toJson<String?>(gender),
       'address': serializer.toJson<String?>(address),
-      'photoUrl': serializer.toJson<String?>(photoUrl),
-      'admissionDate': serializer.toJson<String?>(admissionDate),
+      'photo_url': serializer.toJson<String?>(photoUrl),
+      'admission_date': serializer.toJson<String?>(admissionDate),
       'status': serializer.toJson<String>(status),
-      'leftDate': serializer.toJson<String?>(leftDate),
-      'leftReason': serializer.toJson<String?>(leftReason),
+      'left_date': serializer.toJson<String?>(leftDate),
+      'left_reason': serializer.toJson<String?>(leftReason),
     };
   }
 
@@ -6629,38 +6629,38 @@ class AttendanceRow extends DataClass implements Insertable<AttendanceRow> {
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return AttendanceRow(
-      updatedAt: serializer.fromJson<String>(json['updatedAt']),
-      deletedAt: serializer.fromJson<String?>(json['deletedAt']),
-      serverSeq: serializer.fromJson<int?>(json['serverSeq']),
+      updatedAt: serializer.fromJson<String>(json['updated_at']),
+      deletedAt: serializer.fromJson<String?>(json['deleted_at']),
+      serverSeq: serializer.fromJson<int?>(json['server_seq']),
       version: serializer.fromJson<int>(json['version']),
       id: serializer.fromJson<String>(json['id']),
-      schoolId: serializer.fromJson<String>(json['schoolId']),
-      studentId: serializer.fromJson<String>(json['studentId']),
-      classId: serializer.fromJson<String>(json['classId']),
+      schoolId: serializer.fromJson<String>(json['school_id']),
+      studentId: serializer.fromJson<String>(json['student_id']),
+      classId: serializer.fromJson<String>(json['class_id']),
       date: serializer.fromJson<String>(json['date']),
       status: serializer.fromJson<String>(json['status']),
       remarks: serializer.fromJson<String?>(json['remarks']),
-      markedBy: serializer.fromJson<String>(json['markedBy']),
-      markedAt: serializer.fromJson<String>(json['markedAt']),
+      markedBy: serializer.fromJson<String>(json['marked_by']),
+      markedAt: serializer.fromJson<String>(json['marked_at']),
     );
   }
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
-      'updatedAt': serializer.toJson<String>(updatedAt),
-      'deletedAt': serializer.toJson<String?>(deletedAt),
-      'serverSeq': serializer.toJson<int?>(serverSeq),
+      'updated_at': serializer.toJson<String>(updatedAt),
+      'deleted_at': serializer.toJson<String?>(deletedAt),
+      'server_seq': serializer.toJson<int?>(serverSeq),
       'version': serializer.toJson<int>(version),
       'id': serializer.toJson<String>(id),
-      'schoolId': serializer.toJson<String>(schoolId),
-      'studentId': serializer.toJson<String>(studentId),
-      'classId': serializer.toJson<String>(classId),
+      'school_id': serializer.toJson<String>(schoolId),
+      'student_id': serializer.toJson<String>(studentId),
+      'class_id': serializer.toJson<String>(classId),
       'date': serializer.toJson<String>(date),
       'status': serializer.toJson<String>(status),
       'remarks': serializer.toJson<String?>(remarks),
-      'markedBy': serializer.toJson<String>(markedBy),
-      'markedAt': serializer.toJson<String>(markedAt),
+      'marked_by': serializer.toJson<String>(markedBy),
+      'marked_at': serializer.toJson<String>(markedAt),
     };
   }
 
@@ -7393,36 +7393,36 @@ class Exam extends DataClass implements Insertable<Exam> {
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return Exam(
-      updatedAt: serializer.fromJson<String>(json['updatedAt']),
-      deletedAt: serializer.fromJson<String?>(json['deletedAt']),
-      serverSeq: serializer.fromJson<int?>(json['serverSeq']),
+      updatedAt: serializer.fromJson<String>(json['updated_at']),
+      deletedAt: serializer.fromJson<String?>(json['deleted_at']),
+      serverSeq: serializer.fromJson<int?>(json['server_seq']),
       version: serializer.fromJson<int>(json['version']),
       id: serializer.fromJson<String>(json['id']),
-      schoolId: serializer.fromJson<String>(json['schoolId']),
-      academicYearId: serializer.fromJson<String>(json['academicYearId']),
+      schoolId: serializer.fromJson<String>(json['school_id']),
+      academicYearId: serializer.fromJson<String>(json['academic_year_id']),
       name: serializer.fromJson<String>(json['name']),
-      examType: serializer.fromJson<String>(json['examType']),
-      startDate: serializer.fromJson<String?>(json['startDate']),
-      endDate: serializer.fromJson<String?>(json['endDate']),
-      isPublished: serializer.fromJson<bool>(json['isPublished']),
+      examType: serializer.fromJson<String>(json['exam_type']),
+      startDate: serializer.fromJson<String?>(json['start_date']),
+      endDate: serializer.fromJson<String?>(json['end_date']),
+      isPublished: serializer.fromJson<bool>(json['is_published']),
     );
   }
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
-      'updatedAt': serializer.toJson<String>(updatedAt),
-      'deletedAt': serializer.toJson<String?>(deletedAt),
-      'serverSeq': serializer.toJson<int?>(serverSeq),
+      'updated_at': serializer.toJson<String>(updatedAt),
+      'deleted_at': serializer.toJson<String?>(deletedAt),
+      'server_seq': serializer.toJson<int?>(serverSeq),
       'version': serializer.toJson<int>(version),
       'id': serializer.toJson<String>(id),
-      'schoolId': serializer.toJson<String>(schoolId),
-      'academicYearId': serializer.toJson<String>(academicYearId),
+      'school_id': serializer.toJson<String>(schoolId),
+      'academic_year_id': serializer.toJson<String>(academicYearId),
       'name': serializer.toJson<String>(name),
-      'examType': serializer.toJson<String>(examType),
-      'startDate': serializer.toJson<String?>(startDate),
-      'endDate': serializer.toJson<String?>(endDate),
-      'isPublished': serializer.toJson<bool>(isPublished),
+      'exam_type': serializer.toJson<String>(examType),
+      'start_date': serializer.toJson<String?>(startDate),
+      'end_date': serializer.toJson<String?>(endDate),
+      'is_published': serializer.toJson<bool>(isPublished),
     };
   }
 
@@ -8247,44 +8247,44 @@ class Mark extends DataClass implements Insertable<Mark> {
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return Mark(
-      updatedAt: serializer.fromJson<String>(json['updatedAt']),
-      deletedAt: serializer.fromJson<String?>(json['deletedAt']),
-      serverSeq: serializer.fromJson<int?>(json['serverSeq']),
+      updatedAt: serializer.fromJson<String>(json['updated_at']),
+      deletedAt: serializer.fromJson<String?>(json['deleted_at']),
+      serverSeq: serializer.fromJson<int?>(json['server_seq']),
       version: serializer.fromJson<int>(json['version']),
       id: serializer.fromJson<String>(json['id']),
-      schoolId: serializer.fromJson<String>(json['schoolId']),
-      examId: serializer.fromJson<String>(json['examId']),
-      studentId: serializer.fromJson<String>(json['studentId']),
-      subjectId: serializer.fromJson<String>(json['subjectId']),
-      classId: serializer.fromJson<String>(json['classId']),
-      obtainedMarks: serializer.fromJson<double?>(json['obtainedMarks']),
-      totalMarks: serializer.fromJson<double>(json['totalMarks']),
-      isAbsent: serializer.fromJson<bool>(json['isAbsent']),
+      schoolId: serializer.fromJson<String>(json['school_id']),
+      examId: serializer.fromJson<String>(json['exam_id']),
+      studentId: serializer.fromJson<String>(json['student_id']),
+      subjectId: serializer.fromJson<String>(json['subject_id']),
+      classId: serializer.fromJson<String>(json['class_id']),
+      obtainedMarks: serializer.fromJson<double?>(json['obtained_marks']),
+      totalMarks: serializer.fromJson<double>(json['total_marks']),
+      isAbsent: serializer.fromJson<bool>(json['is_absent']),
       grade: serializer.fromJson<String?>(json['grade']),
       remarks: serializer.fromJson<String?>(json['remarks']),
-      enteredBy: serializer.fromJson<String?>(json['enteredBy']),
+      enteredBy: serializer.fromJson<String?>(json['entered_by']),
     );
   }
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
-      'updatedAt': serializer.toJson<String>(updatedAt),
-      'deletedAt': serializer.toJson<String?>(deletedAt),
-      'serverSeq': serializer.toJson<int?>(serverSeq),
+      'updated_at': serializer.toJson<String>(updatedAt),
+      'deleted_at': serializer.toJson<String?>(deletedAt),
+      'server_seq': serializer.toJson<int?>(serverSeq),
       'version': serializer.toJson<int>(version),
       'id': serializer.toJson<String>(id),
-      'schoolId': serializer.toJson<String>(schoolId),
-      'examId': serializer.toJson<String>(examId),
-      'studentId': serializer.toJson<String>(studentId),
-      'subjectId': serializer.toJson<String>(subjectId),
-      'classId': serializer.toJson<String>(classId),
-      'obtainedMarks': serializer.toJson<double?>(obtainedMarks),
-      'totalMarks': serializer.toJson<double>(totalMarks),
-      'isAbsent': serializer.toJson<bool>(isAbsent),
+      'school_id': serializer.toJson<String>(schoolId),
+      'exam_id': serializer.toJson<String>(examId),
+      'student_id': serializer.toJson<String>(studentId),
+      'subject_id': serializer.toJson<String>(subjectId),
+      'class_id': serializer.toJson<String>(classId),
+      'obtained_marks': serializer.toJson<double?>(obtainedMarks),
+      'total_marks': serializer.toJson<double>(totalMarks),
+      'is_absent': serializer.toJson<bool>(isAbsent),
       'grade': serializer.toJson<String?>(grade),
       'remarks': serializer.toJson<String?>(remarks),
-      'enteredBy': serializer.toJson<String?>(enteredBy),
+      'entered_by': serializer.toJson<String?>(enteredBy),
     };
   }
 
@@ -9087,38 +9087,38 @@ class FeeStructure extends DataClass implements Insertable<FeeStructure> {
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return FeeStructure(
-      updatedAt: serializer.fromJson<String>(json['updatedAt']),
-      deletedAt: serializer.fromJson<String?>(json['deletedAt']),
-      serverSeq: serializer.fromJson<int?>(json['serverSeq']),
+      updatedAt: serializer.fromJson<String>(json['updated_at']),
+      deletedAt: serializer.fromJson<String?>(json['deleted_at']),
+      serverSeq: serializer.fromJson<int?>(json['server_seq']),
       version: serializer.fromJson<int>(json['version']),
       id: serializer.fromJson<String>(json['id']),
-      schoolId: serializer.fromJson<String>(json['schoolId']),
-      academicYearId: serializer.fromJson<String>(json['academicYearId']),
-      classId: serializer.fromJson<String?>(json['classId']),
-      tuitionFee: serializer.fromJson<double>(json['tuitionFee']),
-      admissionFee: serializer.fromJson<double>(json['admissionFee']),
-      examFee: serializer.fromJson<double>(json['examFee']),
-      otherFee: serializer.fromJson<double>(json['otherFee']),
-      otherLabel: serializer.fromJson<String?>(json['otherLabel']),
+      schoolId: serializer.fromJson<String>(json['school_id']),
+      academicYearId: serializer.fromJson<String>(json['academic_year_id']),
+      classId: serializer.fromJson<String?>(json['class_id']),
+      tuitionFee: serializer.fromJson<double>(json['tuition_fee']),
+      admissionFee: serializer.fromJson<double>(json['admission_fee']),
+      examFee: serializer.fromJson<double>(json['exam_fee']),
+      otherFee: serializer.fromJson<double>(json['other_fee']),
+      otherLabel: serializer.fromJson<String?>(json['other_label']),
     );
   }
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
-      'updatedAt': serializer.toJson<String>(updatedAt),
-      'deletedAt': serializer.toJson<String?>(deletedAt),
-      'serverSeq': serializer.toJson<int?>(serverSeq),
+      'updated_at': serializer.toJson<String>(updatedAt),
+      'deleted_at': serializer.toJson<String?>(deletedAt),
+      'server_seq': serializer.toJson<int?>(serverSeq),
       'version': serializer.toJson<int>(version),
       'id': serializer.toJson<String>(id),
-      'schoolId': serializer.toJson<String>(schoolId),
-      'academicYearId': serializer.toJson<String>(academicYearId),
-      'classId': serializer.toJson<String?>(classId),
-      'tuitionFee': serializer.toJson<double>(tuitionFee),
-      'admissionFee': serializer.toJson<double>(admissionFee),
-      'examFee': serializer.toJson<double>(examFee),
-      'otherFee': serializer.toJson<double>(otherFee),
-      'otherLabel': serializer.toJson<String?>(otherLabel),
+      'school_id': serializer.toJson<String>(schoolId),
+      'academic_year_id': serializer.toJson<String>(academicYearId),
+      'class_id': serializer.toJson<String?>(classId),
+      'tuition_fee': serializer.toJson<double>(tuitionFee),
+      'admission_fee': serializer.toJson<double>(admissionFee),
+      'exam_fee': serializer.toJson<double>(examFee),
+      'other_fee': serializer.toJson<double>(otherFee),
+      'other_label': serializer.toJson<String?>(otherLabel),
     };
   }
 
@@ -10238,64 +10238,64 @@ class FeeChallan extends DataClass implements Insertable<FeeChallan> {
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return FeeChallan(
-      updatedAt: serializer.fromJson<String>(json['updatedAt']),
-      deletedAt: serializer.fromJson<String?>(json['deletedAt']),
-      serverSeq: serializer.fromJson<int?>(json['serverSeq']),
+      updatedAt: serializer.fromJson<String>(json['updated_at']),
+      deletedAt: serializer.fromJson<String?>(json['deleted_at']),
+      serverSeq: serializer.fromJson<int?>(json['server_seq']),
       version: serializer.fromJson<int>(json['version']),
       id: serializer.fromJson<String>(json['id']),
-      schoolId: serializer.fromJson<String>(json['schoolId']),
-      studentId: serializer.fromJson<String>(json['studentId']),
-      classId: serializer.fromJson<String>(json['classId']),
-      challanNo: serializer.fromJson<String>(json['challanNo']),
+      schoolId: serializer.fromJson<String>(json['school_id']),
+      studentId: serializer.fromJson<String>(json['student_id']),
+      classId: serializer.fromJson<String>(json['class_id']),
+      challanNo: serializer.fromJson<String>(json['challan_no']),
       month: serializer.fromJson<int>(json['month']),
       year: serializer.fromJson<int>(json['year']),
-      tuitionFee: serializer.fromJson<double>(json['tuitionFee']),
-      admissionFee: serializer.fromJson<double>(json['admissionFee']),
-      examFee: serializer.fromJson<double>(json['examFee']),
-      otherFee: serializer.fromJson<double>(json['otherFee']),
+      tuitionFee: serializer.fromJson<double>(json['tuition_fee']),
+      admissionFee: serializer.fromJson<double>(json['admission_fee']),
+      examFee: serializer.fromJson<double>(json['exam_fee']),
+      otherFee: serializer.fromJson<double>(json['other_fee']),
       arrears: serializer.fromJson<double>(json['arrears']),
       discount: serializer.fromJson<double>(json['discount']),
       fine: serializer.fromJson<double>(json['fine']),
-      totalAmount: serializer.fromJson<double>(json['totalAmount']),
-      issueDate: serializer.fromJson<String>(json['issueDate']),
-      dueDate: serializer.fromJson<String>(json['dueDate']),
+      totalAmount: serializer.fromJson<double>(json['total_amount']),
+      issueDate: serializer.fromJson<String>(json['issue_date']),
+      dueDate: serializer.fromJson<String>(json['due_date']),
       status: serializer.fromJson<String>(json['status']),
-      paidAmount: serializer.fromJson<double>(json['paidAmount']),
-      paidDate: serializer.fromJson<String?>(json['paidDate']),
-      paymentMethod: serializer.fromJson<String?>(json['paymentMethod']),
-      receivedBy: serializer.fromJson<String?>(json['receivedBy']),
+      paidAmount: serializer.fromJson<double>(json['paid_amount']),
+      paidDate: serializer.fromJson<String?>(json['paid_date']),
+      paymentMethod: serializer.fromJson<String?>(json['payment_method']),
+      receivedBy: serializer.fromJson<String?>(json['received_by']),
     );
   }
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
-      'updatedAt': serializer.toJson<String>(updatedAt),
-      'deletedAt': serializer.toJson<String?>(deletedAt),
-      'serverSeq': serializer.toJson<int?>(serverSeq),
+      'updated_at': serializer.toJson<String>(updatedAt),
+      'deleted_at': serializer.toJson<String?>(deletedAt),
+      'server_seq': serializer.toJson<int?>(serverSeq),
       'version': serializer.toJson<int>(version),
       'id': serializer.toJson<String>(id),
-      'schoolId': serializer.toJson<String>(schoolId),
-      'studentId': serializer.toJson<String>(studentId),
-      'classId': serializer.toJson<String>(classId),
-      'challanNo': serializer.toJson<String>(challanNo),
+      'school_id': serializer.toJson<String>(schoolId),
+      'student_id': serializer.toJson<String>(studentId),
+      'class_id': serializer.toJson<String>(classId),
+      'challan_no': serializer.toJson<String>(challanNo),
       'month': serializer.toJson<int>(month),
       'year': serializer.toJson<int>(year),
-      'tuitionFee': serializer.toJson<double>(tuitionFee),
-      'admissionFee': serializer.toJson<double>(admissionFee),
-      'examFee': serializer.toJson<double>(examFee),
-      'otherFee': serializer.toJson<double>(otherFee),
+      'tuition_fee': serializer.toJson<double>(tuitionFee),
+      'admission_fee': serializer.toJson<double>(admissionFee),
+      'exam_fee': serializer.toJson<double>(examFee),
+      'other_fee': serializer.toJson<double>(otherFee),
       'arrears': serializer.toJson<double>(arrears),
       'discount': serializer.toJson<double>(discount),
       'fine': serializer.toJson<double>(fine),
-      'totalAmount': serializer.toJson<double>(totalAmount),
-      'issueDate': serializer.toJson<String>(issueDate),
-      'dueDate': serializer.toJson<String>(dueDate),
+      'total_amount': serializer.toJson<double>(totalAmount),
+      'issue_date': serializer.toJson<String>(issueDate),
+      'due_date': serializer.toJson<String>(dueDate),
       'status': serializer.toJson<String>(status),
-      'paidAmount': serializer.toJson<double>(paidAmount),
-      'paidDate': serializer.toJson<String?>(paidDate),
-      'paymentMethod': serializer.toJson<String?>(paymentMethod),
-      'receivedBy': serializer.toJson<String?>(receivedBy),
+      'paid_amount': serializer.toJson<double>(paidAmount),
+      'paid_date': serializer.toJson<String?>(paidDate),
+      'payment_method': serializer.toJson<String?>(paymentMethod),
+      'received_by': serializer.toJson<String?>(receivedBy),
     };
   }
 
@@ -11313,40 +11313,40 @@ class TimetableSlot extends DataClass implements Insertable<TimetableSlot> {
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return TimetableSlot(
-      updatedAt: serializer.fromJson<String>(json['updatedAt']),
-      deletedAt: serializer.fromJson<String?>(json['deletedAt']),
-      serverSeq: serializer.fromJson<int?>(json['serverSeq']),
+      updatedAt: serializer.fromJson<String>(json['updated_at']),
+      deletedAt: serializer.fromJson<String?>(json['deleted_at']),
+      serverSeq: serializer.fromJson<int?>(json['server_seq']),
       version: serializer.fromJson<int>(json['version']),
       id: serializer.fromJson<String>(json['id']),
-      schoolId: serializer.fromJson<String>(json['schoolId']),
-      classId: serializer.fromJson<String>(json['classId']),
-      subjectId: serializer.fromJson<String?>(json['subjectId']),
-      teacherId: serializer.fromJson<String?>(json['teacherId']),
-      dayOfWeek: serializer.fromJson<int>(json['dayOfWeek']),
-      periodNo: serializer.fromJson<int>(json['periodNo']),
-      startTime: serializer.fromJson<String>(json['startTime']),
-      endTime: serializer.fromJson<String>(json['endTime']),
-      slotType: serializer.fromJson<String>(json['slotType']),
+      schoolId: serializer.fromJson<String>(json['school_id']),
+      classId: serializer.fromJson<String>(json['class_id']),
+      subjectId: serializer.fromJson<String?>(json['subject_id']),
+      teacherId: serializer.fromJson<String?>(json['teacher_id']),
+      dayOfWeek: serializer.fromJson<int>(json['day_of_week']),
+      periodNo: serializer.fromJson<int>(json['period_no']),
+      startTime: serializer.fromJson<String>(json['start_time']),
+      endTime: serializer.fromJson<String>(json['end_time']),
+      slotType: serializer.fromJson<String>(json['slot_type']),
     );
   }
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
-      'updatedAt': serializer.toJson<String>(updatedAt),
-      'deletedAt': serializer.toJson<String?>(deletedAt),
-      'serverSeq': serializer.toJson<int?>(serverSeq),
+      'updated_at': serializer.toJson<String>(updatedAt),
+      'deleted_at': serializer.toJson<String?>(deletedAt),
+      'server_seq': serializer.toJson<int?>(serverSeq),
       'version': serializer.toJson<int>(version),
       'id': serializer.toJson<String>(id),
-      'schoolId': serializer.toJson<String>(schoolId),
-      'classId': serializer.toJson<String>(classId),
-      'subjectId': serializer.toJson<String?>(subjectId),
-      'teacherId': serializer.toJson<String?>(teacherId),
-      'dayOfWeek': serializer.toJson<int>(dayOfWeek),
-      'periodNo': serializer.toJson<int>(periodNo),
-      'startTime': serializer.toJson<String>(startTime),
-      'endTime': serializer.toJson<String>(endTime),
-      'slotType': serializer.toJson<String>(slotType),
+      'school_id': serializer.toJson<String>(schoolId),
+      'class_id': serializer.toJson<String>(classId),
+      'subject_id': serializer.toJson<String?>(subjectId),
+      'teacher_id': serializer.toJson<String?>(teacherId),
+      'day_of_week': serializer.toJson<int>(dayOfWeek),
+      'period_no': serializer.toJson<int>(periodNo),
+      'start_time': serializer.toJson<String>(startTime),
+      'end_time': serializer.toJson<String>(endTime),
+      'slot_type': serializer.toJson<String>(slotType),
     };
   }
 
@@ -12145,40 +12145,40 @@ class Assignment extends DataClass implements Insertable<Assignment> {
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return Assignment(
-      updatedAt: serializer.fromJson<String>(json['updatedAt']),
-      deletedAt: serializer.fromJson<String?>(json['deletedAt']),
-      serverSeq: serializer.fromJson<int?>(json['serverSeq']),
+      updatedAt: serializer.fromJson<String>(json['updated_at']),
+      deletedAt: serializer.fromJson<String?>(json['deleted_at']),
+      serverSeq: serializer.fromJson<int?>(json['server_seq']),
       version: serializer.fromJson<int>(json['version']),
       id: serializer.fromJson<String>(json['id']),
-      schoolId: serializer.fromJson<String>(json['schoolId']),
-      classId: serializer.fromJson<String>(json['classId']),
-      subjectId: serializer.fromJson<String?>(json['subjectId']),
+      schoolId: serializer.fromJson<String>(json['school_id']),
+      classId: serializer.fromJson<String>(json['class_id']),
+      subjectId: serializer.fromJson<String?>(json['subject_id']),
       title: serializer.fromJson<String>(json['title']),
       description: serializer.fromJson<String?>(json['description']),
-      attachmentUrl: serializer.fromJson<String?>(json['attachmentUrl']),
-      assignedDate: serializer.fromJson<String>(json['assignedDate']),
-      dueDate: serializer.fromJson<String?>(json['dueDate']),
-      createdBy: serializer.fromJson<String?>(json['createdBy']),
+      attachmentUrl: serializer.fromJson<String?>(json['attachment_url']),
+      assignedDate: serializer.fromJson<String>(json['assigned_date']),
+      dueDate: serializer.fromJson<String?>(json['due_date']),
+      createdBy: serializer.fromJson<String?>(json['created_by']),
     );
   }
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
-      'updatedAt': serializer.toJson<String>(updatedAt),
-      'deletedAt': serializer.toJson<String?>(deletedAt),
-      'serverSeq': serializer.toJson<int?>(serverSeq),
+      'updated_at': serializer.toJson<String>(updatedAt),
+      'deleted_at': serializer.toJson<String?>(deletedAt),
+      'server_seq': serializer.toJson<int?>(serverSeq),
       'version': serializer.toJson<int>(version),
       'id': serializer.toJson<String>(id),
-      'schoolId': serializer.toJson<String>(schoolId),
-      'classId': serializer.toJson<String>(classId),
-      'subjectId': serializer.toJson<String?>(subjectId),
+      'school_id': serializer.toJson<String>(schoolId),
+      'class_id': serializer.toJson<String>(classId),
+      'subject_id': serializer.toJson<String?>(subjectId),
       'title': serializer.toJson<String>(title),
       'description': serializer.toJson<String?>(description),
-      'attachmentUrl': serializer.toJson<String?>(attachmentUrl),
-      'assignedDate': serializer.toJson<String>(assignedDate),
-      'dueDate': serializer.toJson<String?>(dueDate),
-      'createdBy': serializer.toJson<String?>(createdBy),
+      'attachment_url': serializer.toJson<String?>(attachmentUrl),
+      'assigned_date': serializer.toJson<String>(assignedDate),
+      'due_date': serializer.toJson<String?>(dueDate),
+      'created_by': serializer.toJson<String?>(createdBy),
     };
   }
 
@@ -12978,40 +12978,40 @@ class Notice extends DataClass implements Insertable<Notice> {
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return Notice(
-      updatedAt: serializer.fromJson<String>(json['updatedAt']),
-      deletedAt: serializer.fromJson<String?>(json['deletedAt']),
-      serverSeq: serializer.fromJson<int?>(json['serverSeq']),
+      updatedAt: serializer.fromJson<String>(json['updated_at']),
+      deletedAt: serializer.fromJson<String?>(json['deleted_at']),
+      serverSeq: serializer.fromJson<int?>(json['server_seq']),
       version: serializer.fromJson<int>(json['version']),
       id: serializer.fromJson<String>(json['id']),
-      schoolId: serializer.fromJson<String>(json['schoolId']),
-      classId: serializer.fromJson<String?>(json['classId']),
+      schoolId: serializer.fromJson<String>(json['school_id']),
+      classId: serializer.fromJson<String?>(json['class_id']),
       title: serializer.fromJson<String>(json['title']),
       body: serializer.fromJson<String>(json['body']),
-      attachmentUrl: serializer.fromJson<String?>(json['attachmentUrl']),
+      attachmentUrl: serializer.fromJson<String?>(json['attachment_url']),
       priority: serializer.fromJson<String>(json['priority']),
-      publishDate: serializer.fromJson<String>(json['publishDate']),
-      expiresAt: serializer.fromJson<String?>(json['expiresAt']),
-      createdBy: serializer.fromJson<String?>(json['createdBy']),
+      publishDate: serializer.fromJson<String>(json['publish_date']),
+      expiresAt: serializer.fromJson<String?>(json['expires_at']),
+      createdBy: serializer.fromJson<String?>(json['created_by']),
     );
   }
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
-      'updatedAt': serializer.toJson<String>(updatedAt),
-      'deletedAt': serializer.toJson<String?>(deletedAt),
-      'serverSeq': serializer.toJson<int?>(serverSeq),
+      'updated_at': serializer.toJson<String>(updatedAt),
+      'deleted_at': serializer.toJson<String?>(deletedAt),
+      'server_seq': serializer.toJson<int?>(serverSeq),
       'version': serializer.toJson<int>(version),
       'id': serializer.toJson<String>(id),
-      'schoolId': serializer.toJson<String>(schoolId),
-      'classId': serializer.toJson<String?>(classId),
+      'school_id': serializer.toJson<String>(schoolId),
+      'class_id': serializer.toJson<String?>(classId),
       'title': serializer.toJson<String>(title),
       'body': serializer.toJson<String>(body),
-      'attachmentUrl': serializer.toJson<String?>(attachmentUrl),
+      'attachment_url': serializer.toJson<String?>(attachmentUrl),
       'priority': serializer.toJson<String>(priority),
-      'publishDate': serializer.toJson<String>(publishDate),
-      'expiresAt': serializer.toJson<String?>(expiresAt),
-      'createdBy': serializer.toJson<String?>(createdBy),
+      'publish_date': serializer.toJson<String>(publishDate),
+      'expires_at': serializer.toJson<String?>(expiresAt),
+      'created_by': serializer.toJson<String?>(createdBy),
     };
   }
 
@@ -14004,52 +14004,52 @@ class LostItem extends DataClass implements Insertable<LostItem> {
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return LostItem(
-      updatedAt: serializer.fromJson<String>(json['updatedAt']),
-      deletedAt: serializer.fromJson<String?>(json['deletedAt']),
-      serverSeq: serializer.fromJson<int?>(json['serverSeq']),
+      updatedAt: serializer.fromJson<String>(json['updated_at']),
+      deletedAt: serializer.fromJson<String?>(json['deleted_at']),
+      serverSeq: serializer.fromJson<int?>(json['server_seq']),
       version: serializer.fromJson<int>(json['version']),
       id: serializer.fromJson<String>(json['id']),
-      schoolId: serializer.fromJson<String>(json['schoolId']),
+      schoolId: serializer.fromJson<String>(json['school_id']),
       type: serializer.fromJson<String>(json['type']),
       title: serializer.fromJson<String>(json['title']),
       description: serializer.fromJson<String?>(json['description']),
       category: serializer.fromJson<String?>(json['category']),
       location: serializer.fromJson<String?>(json['location']),
-      incidentDate: serializer.fromJson<String?>(json['incidentDate']),
-      reportedBy: serializer.fromJson<String>(json['reportedBy']),
+      incidentDate: serializer.fromJson<String?>(json['incident_date']),
+      reportedBy: serializer.fromJson<String>(json['reported_by']),
       status: serializer.fromJson<String>(json['status']),
       moderation: serializer.fromJson<String>(json['moderation']),
-      reportCount: serializer.fromJson<int>(json['reportCount']),
-      moderatedBy: serializer.fromJson<String?>(json['moderatedBy']),
+      reportCount: serializer.fromJson<int>(json['report_count']),
+      moderatedBy: serializer.fromJson<String?>(json['moderated_by']),
       photos: serializer.fromJson<String>(json['photos']),
-      expiresAt: serializer.fromJson<String?>(json['expiresAt']),
-      createdAt: serializer.fromJson<String>(json['createdAt']),
+      expiresAt: serializer.fromJson<String?>(json['expires_at']),
+      createdAt: serializer.fromJson<String>(json['created_at']),
     );
   }
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
-      'updatedAt': serializer.toJson<String>(updatedAt),
-      'deletedAt': serializer.toJson<String?>(deletedAt),
-      'serverSeq': serializer.toJson<int?>(serverSeq),
+      'updated_at': serializer.toJson<String>(updatedAt),
+      'deleted_at': serializer.toJson<String?>(deletedAt),
+      'server_seq': serializer.toJson<int?>(serverSeq),
       'version': serializer.toJson<int>(version),
       'id': serializer.toJson<String>(id),
-      'schoolId': serializer.toJson<String>(schoolId),
+      'school_id': serializer.toJson<String>(schoolId),
       'type': serializer.toJson<String>(type),
       'title': serializer.toJson<String>(title),
       'description': serializer.toJson<String?>(description),
       'category': serializer.toJson<String?>(category),
       'location': serializer.toJson<String?>(location),
-      'incidentDate': serializer.toJson<String?>(incidentDate),
-      'reportedBy': serializer.toJson<String>(reportedBy),
+      'incident_date': serializer.toJson<String?>(incidentDate),
+      'reported_by': serializer.toJson<String>(reportedBy),
       'status': serializer.toJson<String>(status),
       'moderation': serializer.toJson<String>(moderation),
-      'reportCount': serializer.toJson<int>(reportCount),
-      'moderatedBy': serializer.toJson<String?>(moderatedBy),
+      'report_count': serializer.toJson<int>(reportCount),
+      'moderated_by': serializer.toJson<String?>(moderatedBy),
       'photos': serializer.toJson<String>(photos),
-      'expiresAt': serializer.toJson<String?>(expiresAt),
-      'createdAt': serializer.toJson<String>(createdAt),
+      'expires_at': serializer.toJson<String?>(expiresAt),
+      'created_at': serializer.toJson<String>(createdAt),
     };
   }
 
@@ -14861,34 +14861,34 @@ class ItemClaim extends DataClass implements Insertable<ItemClaim> {
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return ItemClaim(
-      updatedAt: serializer.fromJson<String>(json['updatedAt']),
-      deletedAt: serializer.fromJson<String?>(json['deletedAt']),
-      serverSeq: serializer.fromJson<int?>(json['serverSeq']),
+      updatedAt: serializer.fromJson<String>(json['updated_at']),
+      deletedAt: serializer.fromJson<String?>(json['deleted_at']),
+      serverSeq: serializer.fromJson<int?>(json['server_seq']),
       version: serializer.fromJson<int>(json['version']),
       id: serializer.fromJson<String>(json['id']),
-      schoolId: serializer.fromJson<String>(json['schoolId']),
-      itemId: serializer.fromJson<String>(json['itemId']),
-      claimedBy: serializer.fromJson<String>(json['claimedBy']),
+      schoolId: serializer.fromJson<String>(json['school_id']),
+      itemId: serializer.fromJson<String>(json['item_id']),
+      claimedBy: serializer.fromJson<String>(json['claimed_by']),
       message: serializer.fromJson<String?>(json['message']),
       status: serializer.fromJson<String>(json['status']),
-      handledBy: serializer.fromJson<String?>(json['handledBy']),
+      handledBy: serializer.fromJson<String?>(json['handled_by']),
     );
   }
   @override
   Map<String, dynamic> toJson({ValueSerializer? serializer}) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
-      'updatedAt': serializer.toJson<String>(updatedAt),
-      'deletedAt': serializer.toJson<String?>(deletedAt),
-      'serverSeq': serializer.toJson<int?>(serverSeq),
+      'updated_at': serializer.toJson<String>(updatedAt),
+      'deleted_at': serializer.toJson<String?>(deletedAt),
+      'server_seq': serializer.toJson<int?>(serverSeq),
       'version': serializer.toJson<int>(version),
       'id': serializer.toJson<String>(id),
-      'schoolId': serializer.toJson<String>(schoolId),
-      'itemId': serializer.toJson<String>(itemId),
-      'claimedBy': serializer.toJson<String>(claimedBy),
+      'school_id': serializer.toJson<String>(schoolId),
+      'item_id': serializer.toJson<String>(itemId),
+      'claimed_by': serializer.toJson<String>(claimedBy),
       'message': serializer.toJson<String?>(message),
       'status': serializer.toJson<String>(status),
-      'handledBy': serializer.toJson<String?>(handledBy),
+      'handled_by': serializer.toJson<String?>(handledBy),
     };
   }
 
@@ -15475,14 +15475,14 @@ class OutboxEntry extends DataClass implements Insertable<OutboxEntry> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return OutboxEntry(
       seq: serializer.fromJson<int>(json['seq']),
-      opId: serializer.fromJson<String>(json['opId']),
-      tableNameRef: serializer.fromJson<String>(json['tableNameRef']),
-      rowId: serializer.fromJson<String>(json['rowId']),
+      opId: serializer.fromJson<String>(json['op_id']),
+      tableNameRef: serializer.fromJson<String>(json['table_name']),
+      rowId: serializer.fromJson<String>(json['row_id']),
       op: serializer.fromJson<String>(json['op']),
       payload: serializer.fromJson<String>(json['payload']),
-      createdAt: serializer.fromJson<String>(json['createdAt']),
+      createdAt: serializer.fromJson<String>(json['created_at']),
       attempts: serializer.fromJson<int>(json['attempts']),
-      lastError: serializer.fromJson<String?>(json['lastError']),
+      lastError: serializer.fromJson<String?>(json['last_error']),
     );
   }
   @override
@@ -15490,14 +15490,14 @@ class OutboxEntry extends DataClass implements Insertable<OutboxEntry> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'seq': serializer.toJson<int>(seq),
-      'opId': serializer.toJson<String>(opId),
-      'tableNameRef': serializer.toJson<String>(tableNameRef),
-      'rowId': serializer.toJson<String>(rowId),
+      'op_id': serializer.toJson<String>(opId),
+      'table_name': serializer.toJson<String>(tableNameRef),
+      'row_id': serializer.toJson<String>(rowId),
       'op': serializer.toJson<String>(op),
       'payload': serializer.toJson<String>(payload),
-      'createdAt': serializer.toJson<String>(createdAt),
+      'created_at': serializer.toJson<String>(createdAt),
       'attempts': serializer.toJson<int>(attempts),
-      'lastError': serializer.toJson<String?>(lastError),
+      'last_error': serializer.toJson<String?>(lastError),
     };
   }
 
@@ -16034,14 +16034,14 @@ class AttachmentOutboxEntry extends DataClass
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return AttachmentOutboxEntry(
       id: serializer.fromJson<String>(json['id']),
-      localPath: serializer.fromJson<String>(json['localPath']),
-      storageKey: serializer.fromJson<String>(json['storageKey']),
-      ownerTable: serializer.fromJson<String>(json['ownerTable']),
-      ownerRowId: serializer.fromJson<String>(json['ownerRowId']),
+      localPath: serializer.fromJson<String>(json['local_path']),
+      storageKey: serializer.fromJson<String>(json['storage_key']),
+      ownerTable: serializer.fromJson<String>(json['owner_table']),
+      ownerRowId: serializer.fromJson<String>(json['owner_row_id']),
       status: serializer.fromJson<String>(json['status']),
       attempts: serializer.fromJson<int>(json['attempts']),
-      lastError: serializer.fromJson<String?>(json['lastError']),
-      createdAt: serializer.fromJson<String>(json['createdAt']),
+      lastError: serializer.fromJson<String?>(json['last_error']),
+      createdAt: serializer.fromJson<String>(json['created_at']),
     );
   }
   @override
@@ -16049,14 +16049,14 @@ class AttachmentOutboxEntry extends DataClass
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<String>(id),
-      'localPath': serializer.toJson<String>(localPath),
-      'storageKey': serializer.toJson<String>(storageKey),
-      'ownerTable': serializer.toJson<String>(ownerTable),
-      'ownerRowId': serializer.toJson<String>(ownerRowId),
+      'local_path': serializer.toJson<String>(localPath),
+      'storage_key': serializer.toJson<String>(storageKey),
+      'owner_table': serializer.toJson<String>(ownerTable),
+      'owner_row_id': serializer.toJson<String>(ownerRowId),
       'status': serializer.toJson<String>(status),
       'attempts': serializer.toJson<int>(attempts),
-      'lastError': serializer.toJson<String?>(lastError),
-      'createdAt': serializer.toJson<String>(createdAt),
+      'last_error': serializer.toJson<String?>(lastError),
+      'created_at': serializer.toJson<String>(createdAt),
     };
   }
 
