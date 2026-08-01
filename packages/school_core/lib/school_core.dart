@@ -30,4 +30,6 @@ export 'src/enums.dart';
 export 'src/grading.dart';
 export 'src/ids.dart';
 export 'src/policy.dart';
+export 'src/supabase_config.dart';
+export 'src/sync/outbox_writer.dart';
 export 'src/time.dart';

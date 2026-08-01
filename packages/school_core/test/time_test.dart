@@ -53,8 +53,30 @@ void main() {
     });
 
     test('rejects a malformed date', () {
+      // DD-MM-YYYY has three dash-separated parts too, so a naive length
+      // check passes it and DateTime(2, 8, 2026) silently becomes year 8.
       expect(() => decodeDate('02-08-2026'), throwsA(isA<FormatException>()));
       expect(() => decodeDate('2026/08/02'), throwsA(isA<FormatException>()));
+      expect(() => decodeDate('2026-8-2'), throwsA(isA<FormatException>()));
+      expect(() => decodeDate(''), throwsA(isA<FormatException>()));
+      expect(
+          () => decodeDate('2026-08-02T00:00:00Z'),
+          throwsA(isA<FormatException>()));
+    });
+
+    test('rejects a date that is well-formed but not real', () {
+      // DateTime rolls these forward instead of complaining: month 13 becomes
+      // next January, 30 February becomes 2 March. A peer sending one of these
+      // must produce an error, not a different date.
+      expect(() => decodeDate('2026-13-01'), throwsA(isA<FormatException>()));
+      expect(() => decodeDate('2026-00-10'), throwsA(isA<FormatException>()));
+      expect(() => decodeDate('2026-02-30'), throwsA(isA<FormatException>()));
+      expect(() => decodeDate('2026-08-32'), throwsA(isA<FormatException>()));
+    });
+
+    test('accepts a real leap day', () {
+      expect(decodeDate('2028-02-29'), DateTime(2028, 2, 29));
+      expect(() => decodeDate('2026-02-29'), throwsA(isA<FormatException>()));
     });
   });
 

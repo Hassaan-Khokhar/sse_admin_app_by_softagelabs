@@ -29,17 +29,34 @@ String encodeDate(DateTime value) {
   return '$y-$m-$d';
 }
 
+final _datePattern = RegExp(r'^\d{4}-\d{2}-\d{2}$');
+
 /// Decodes a `YYYY-MM-DD` DATE column into a local midnight [DateTime].
+///
+/// Strict on purpose. [DateTime] silently NORMALISES out-of-range components —
+/// `DateTime(2, 8, 2026)` becomes year 8, and `DateTime(2026, 2, 30)` becomes
+/// 2 March. So a malformed date would not throw, it would quietly become a
+/// different, entirely plausible date. On a row arriving from a peer that
+/// means a corrupted attendance record rather than a visible error, which is
+/// far worse.
+///
+/// Both the shape and the round-trip are therefore checked.
 DateTime decodeDate(String value) {
-  final parts = value.split('-');
-  if (parts.length != 3) {
+  if (!_datePattern.hasMatch(value)) {
     throw FormatException('Expected YYYY-MM-DD', value);
   }
-  return DateTime(
-    int.parse(parts[0]),
-    int.parse(parts[1]),
-    int.parse(parts[2]),
-  );
+
+  final year = int.parse(value.substring(0, 4));
+  final month = int.parse(value.substring(5, 7));
+  final day = int.parse(value.substring(8, 10));
+  final result = DateTime(year, month, day);
+
+  // Catches month 13, day 32, and 30 February — all of which DateTime would
+  // otherwise roll forward without complaint.
+  if (result.year != year || result.month != month || result.day != day) {
+    throw FormatException('Not a real calendar date', value);
+  }
+  return result;
 }
 
 /// The calendar date [value] falls on, with any time-of-day discarded.

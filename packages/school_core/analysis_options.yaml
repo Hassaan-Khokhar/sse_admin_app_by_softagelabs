@@ -3,10 +3,6 @@ include: package:lints/recommended.yaml
 analyzer:
   exclude:
     - "**/*.g.dart"
-  errors:
-    # The wire strings in enums.dart are the contract with the student app.
-    # An unhandled case in a switch over them is a sync bug, not a style nit.
-    missing_enum_case_clauses: error
   language:
     strict-casts: true
     strict-raw-types: true
@@ -16,3 +12,7 @@ linter:
     - always_declare_return_types
     - prefer_final_locals
     - unnecessary_parenthesis
+    # The wire strings in enums.dart are the contract with the student app.
+    # A switch that misses a case is a sync bug, not a style nit. (Dart 3
+    # already enforces this for switch *expressions*; this covers statements.)
+    - exhaustive_cases
