@@ -3,6 +3,7 @@ import 'package:school_core/school_core.dart';
 
 import 'data/app_scope.dart';
 import 'sync/sync_service.dart';
+import 'screens/attendance_screen.dart';
 import 'screens/dashboard_screen.dart';
 import 'widgets/sync_status_bar.dart';
 
@@ -110,6 +111,7 @@ class _AdminShellState extends State<AdminShell> {
 
   Widget _buildSection() => switch (_section) {
         AdminSection.dashboard => const DashboardScreen(),
+        AdminSection.attendance => const AttendanceScreen(),
         _ => _NotBuiltYet(section: _section),
       };
 }
