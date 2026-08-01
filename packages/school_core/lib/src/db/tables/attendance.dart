@@ -44,3 +44,50 @@ class Attendance extends Table with SyncColumns {
         {studentId, date},
       ];
 }
+
+/// Mirrors `teacher_attendance`, added in migration 003.
+///
+/// Separate from [Attendance] because `attendance.student_id` is NOT NULL and
+/// the table is keyed `UNIQUE(student_id, date)` — the idempotency guarantee
+/// the whole offline retry story depends on. Bending that to fit staff rows
+/// would have been a bad trade for one saved table.
+///
+/// **Staff data.** Students must never read this: RLS gives it to the
+/// principal only. A student knowing which teacher was absent is none of their
+/// business, and in a school where everyone knows everyone, unkind.
+@DataClassName('TeacherAttendanceRow')
+class TeacherAttendance extends Table with SyncColumns {
+  @override
+  String get tableName => 'teacher_attendance';
+
+  TextColumn get id => text()();
+  TextColumn get schoolId => text().named('school_id')();
+  TextColumn get teacherId => text().named('teacher_id')();
+
+  /// DATE as `YYYY-MM-DD`, local calendar — same rules as student attendance.
+  TextColumn get date => text()();
+
+  /// `AttendanceStatus.wire` — the same five states, deliberately. One enum
+  /// serves both registers.
+  TextColumn get status => text()();
+
+  /// `'08:05'`. Wall-clock text, not a timestamp: it is a time of day and
+  /// never needs a timezone. Null when the office did not record arrival.
+  TextColumn get checkInTime => text().named('check_in_time').nullable()();
+
+  /// 'Medical leave', 'Official duty'. Free text — leave categories vary by
+  /// school and guessing at this one's HR policy would be worse than nothing.
+  TextColumn get remarks => text().nullable()();
+
+  TextColumn get markedBy => text().named('marked_by')();
+  TextColumn get markedAt => text().named('marked_at')();
+
+  @override
+  Set<Column<Object>> get primaryKey => {id};
+
+  /// Same idempotency guarantee as the student register.
+  @override
+  List<Set<Column<Object>>> get uniqueKeys => [
+        {teacherId, date},
+      ];
+}

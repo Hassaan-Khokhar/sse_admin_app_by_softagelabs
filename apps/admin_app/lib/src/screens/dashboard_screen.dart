@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:school_core/school_core.dart';
 
 import '../data/app_scope.dart';
+import '../sync/backfill.dart';
 
 /// Principal's landing screen.
 ///
@@ -159,8 +160,9 @@ class _OutboxProbeState extends State<_OutboxProbe> {
             const SizedBox(height: 4),
             Text(
               'Seed builds ~50 students across 9-A, 9-B and 10-A with two '
-              'months of back-dated attendance. The outbox buttons exist only '
-              'to exercise the sync bar until the real transport is built.',
+              'months of back-dated attendance, locally. "Queue all for push" '
+              'then uploads that whole school to Supabase once — after which '
+              'ordinary edits queue themselves.',
               style: theme.textTheme.bodySmall,
             ),
             const SizedBox(height: 12),
@@ -180,10 +182,8 @@ class _OutboxProbeState extends State<_OutboxProbe> {
                   label: const Text('Seed demo data'),
                 ),
                 FilledButton.tonal(
-                  // 40 is the number from the demo script: a class marked with
-                  // the wifi off (CLAUDE.md §12, 0:30).
-                  onPressed: _busy ? null : () => _queue(db, 40),
-                  child: const Text('Queue 40'),
+                  onPressed: _busy ? null : () => _backfill(db),
+                  child: const Text('Queue all for push'),
                 ),
                 OutlinedButton(
                   onPressed: _busy ? null : () => db.delete(db.outbox).go(),
@@ -223,23 +223,25 @@ class _OutboxProbeState extends State<_OutboxProbe> {
     }
   }
 
-  Future<void> _queue(AppDatabase db, int count) async {
-    // One transaction, as every real local write is: the row and its outbox
-    // entry must land together or not at all (CLAUDE.md §10).
-    await db.transaction(() async {
-      for (var i = 0; i < count; i++) {
-        await db.into(db.outbox).insert(
-              OutboxCompanion.insert(
-                opId: newOpId(),
-                tableNameRef: 'attendance',
-                rowId: newId(),
-                op: SyncOp.upsert.wire,
-                payload: '{"probe":true}',
-                createdAt: nowTimestamp(),
-              ),
-            );
-      }
+  /// One-time upload of the whole seeded school.
+  ///
+  /// Needed because the seeder writes straight to SQLite for speed, leaving
+  /// the server empty. Real edits queue themselves as they are made.
+  Future<void> _backfill(AppDatabase db) async {
+    setState(() {
+      _busy = true;
+      _message = 'Queueing…';
     });
+    try {
+      final count = await SyncBackfill(db).enqueueEverything();
+      if (mounted) {
+        setState(() => _message = '$count rows queued — press the sync bar');
+      }
+    } on Object catch (error) {
+      if (mounted) setState(() => _message = 'Queue failed: $error');
+    } finally {
+      if (mounted) setState(() => _busy = false);
+    }
   }
 
   /// Clears local data so seeding can be demonstrated from scratch.

@@ -44,6 +44,7 @@ part 'database.g.dart';
     Students,
     // §3 attendance
     Attendance,
+    TeacherAttendance,
     // §4 exams & marks
     Exams,
     Marks,
@@ -66,13 +67,24 @@ part 'database.g.dart';
 class AppDatabase extends _$AppDatabase {
   AppDatabase(super.executor);
 
+  /// Bump whenever a table or column changes, and add an [onUpgrade] step.
+  ///
+  /// v1 → v2: `teacher_attendance` (migration 003).
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
         onCreate: (m) async {
           await m.createAll();
+          await _createIndexes();
+        },
+        onUpgrade: (m, from, to) async {
+          // Devices that already hold data must not be wiped to gain a table —
+          // an admin PC has the only copy of anything not yet pushed.
+          if (from < 2) {
+            await m.createTable(teacherAttendance);
+          }
           await _createIndexes();
         },
         beforeOpen: (details) async {
@@ -108,6 +120,12 @@ class AppDatabase extends _$AppDatabase {
       // Monthly attendance calendar for one student.
       'CREATE INDEX IF NOT EXISTS idx_attendance_student_date '
           'ON attendance(student_id, date)',
+
+      // Staff register: one teacher's history, and one day across all staff.
+      'CREATE INDEX IF NOT EXISTS idx_teacher_attendance_teacher_date '
+          'ON teacher_attendance(teacher_id, date)',
+      'CREATE INDEX IF NOT EXISTS idx_teacher_attendance_date '
+          'ON teacher_attendance(date) WHERE deleted_at IS NULL',
 
       // "Mark today's attendance for 9-A" — loads the whole class for a day.
       'CREATE INDEX IF NOT EXISTS idx_attendance_class_date '

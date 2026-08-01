@@ -6959,6 +6959,795 @@ class AttendanceCompanion extends UpdateCompanion<AttendanceRow> {
   }
 }
 
+class $TeacherAttendanceTable extends TeacherAttendance
+    with TableInfo<$TeacherAttendanceTable, TeacherAttendanceRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $TeacherAttendanceTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<String> updatedAt = GeneratedColumn<String>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _deletedAtMeta = const VerificationMeta(
+    'deletedAt',
+  );
+  @override
+  late final GeneratedColumn<String> deletedAt = GeneratedColumn<String>(
+    'deleted_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _serverSeqMeta = const VerificationMeta(
+    'serverSeq',
+  );
+  @override
+  late final GeneratedColumn<int> serverSeq = GeneratedColumn<int>(
+    'server_seq',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _versionMeta = const VerificationMeta(
+    'version',
+  );
+  @override
+  late final GeneratedColumn<int> version = GeneratedColumn<int>(
+    'version',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+    defaultValue: const Constant(1),
+  );
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _schoolIdMeta = const VerificationMeta(
+    'schoolId',
+  );
+  @override
+  late final GeneratedColumn<String> schoolId = GeneratedColumn<String>(
+    'school_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _teacherIdMeta = const VerificationMeta(
+    'teacherId',
+  );
+  @override
+  late final GeneratedColumn<String> teacherId = GeneratedColumn<String>(
+    'teacher_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _dateMeta = const VerificationMeta('date');
+  @override
+  late final GeneratedColumn<String> date = GeneratedColumn<String>(
+    'date',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  @override
+  late final GeneratedColumn<String> status = GeneratedColumn<String>(
+    'status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _checkInTimeMeta = const VerificationMeta(
+    'checkInTime',
+  );
+  @override
+  late final GeneratedColumn<String> checkInTime = GeneratedColumn<String>(
+    'check_in_time',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _remarksMeta = const VerificationMeta(
+    'remarks',
+  );
+  @override
+  late final GeneratedColumn<String> remarks = GeneratedColumn<String>(
+    'remarks',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _markedByMeta = const VerificationMeta(
+    'markedBy',
+  );
+  @override
+  late final GeneratedColumn<String> markedBy = GeneratedColumn<String>(
+    'marked_by',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _markedAtMeta = const VerificationMeta(
+    'markedAt',
+  );
+  @override
+  late final GeneratedColumn<String> markedAt = GeneratedColumn<String>(
+    'marked_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    updatedAt,
+    deletedAt,
+    serverSeq,
+    version,
+    id,
+    schoolId,
+    teacherId,
+    date,
+    status,
+    checkInTime,
+    remarks,
+    markedBy,
+    markedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'teacher_attendance';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<TeacherAttendanceRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    if (data.containsKey('deleted_at')) {
+      context.handle(
+        _deletedAtMeta,
+        deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta),
+      );
+    }
+    if (data.containsKey('server_seq')) {
+      context.handle(
+        _serverSeqMeta,
+        serverSeq.isAcceptableOrUnknown(data['server_seq']!, _serverSeqMeta),
+      );
+    }
+    if (data.containsKey('version')) {
+      context.handle(
+        _versionMeta,
+        version.isAcceptableOrUnknown(data['version']!, _versionMeta),
+      );
+    }
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('school_id')) {
+      context.handle(
+        _schoolIdMeta,
+        schoolId.isAcceptableOrUnknown(data['school_id']!, _schoolIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_schoolIdMeta);
+    }
+    if (data.containsKey('teacher_id')) {
+      context.handle(
+        _teacherIdMeta,
+        teacherId.isAcceptableOrUnknown(data['teacher_id']!, _teacherIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_teacherIdMeta);
+    }
+    if (data.containsKey('date')) {
+      context.handle(
+        _dateMeta,
+        date.isAcceptableOrUnknown(data['date']!, _dateMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_dateMeta);
+    }
+    if (data.containsKey('status')) {
+      context.handle(
+        _statusMeta,
+        status.isAcceptableOrUnknown(data['status']!, _statusMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_statusMeta);
+    }
+    if (data.containsKey('check_in_time')) {
+      context.handle(
+        _checkInTimeMeta,
+        checkInTime.isAcceptableOrUnknown(
+          data['check_in_time']!,
+          _checkInTimeMeta,
+        ),
+      );
+    }
+    if (data.containsKey('remarks')) {
+      context.handle(
+        _remarksMeta,
+        remarks.isAcceptableOrUnknown(data['remarks']!, _remarksMeta),
+      );
+    }
+    if (data.containsKey('marked_by')) {
+      context.handle(
+        _markedByMeta,
+        markedBy.isAcceptableOrUnknown(data['marked_by']!, _markedByMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_markedByMeta);
+    }
+    if (data.containsKey('marked_at')) {
+      context.handle(
+        _markedAtMeta,
+        markedAt.isAcceptableOrUnknown(data['marked_at']!, _markedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_markedAtMeta);
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  List<Set<GeneratedColumn>> get uniqueKeys => [
+    {teacherId, date},
+  ];
+  @override
+  TeacherAttendanceRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return TeacherAttendanceRow(
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}updated_at'],
+      )!,
+      deletedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}deleted_at'],
+      ),
+      serverSeq: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}server_seq'],
+      ),
+      version: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}version'],
+      )!,
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      schoolId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}school_id'],
+      )!,
+      teacherId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}teacher_id'],
+      )!,
+      date: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}date'],
+      )!,
+      status: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}status'],
+      )!,
+      checkInTime: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}check_in_time'],
+      ),
+      remarks: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}remarks'],
+      ),
+      markedBy: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}marked_by'],
+      )!,
+      markedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}marked_at'],
+      )!,
+    );
+  }
+
+  @override
+  $TeacherAttendanceTable createAlias(String alias) {
+    return $TeacherAttendanceTable(attachedDatabase, alias);
+  }
+}
+
+class TeacherAttendanceRow extends DataClass
+    implements Insertable<TeacherAttendanceRow> {
+  /// ISO-8601 UTC, set by the CLIENT on every write.
+  ///
+  /// Display and coarse ordering only. Never the sync cursor — school PC clocks
+  /// are routinely wrong, and a clock two days behind would silently skip
+  /// changes forever. The cursor is [serverSeq].
+  final String updatedAt;
+
+  /// Tombstone. Null means alive.
+  ///
+  /// schema.sql convention 3: NEVER DELETE A ROW. A hard delete cannot sync,
+  /// because a missing row is indistinguishable from a row the peer has not
+  /// seen yet. Every query against live data must filter `deletedAt IS NULL`.
+  final String? deletedAt;
+
+  /// Monotonic sequence stamped by the SERVER. The sync cursor.
+  ///
+  /// Null on a row created locally that has not yet been pushed — which is
+  /// also the cheapest way to spot un-synced rows.
+  final int? serverSeq;
+
+  /// Optimistic concurrency counter, incremented on every local write.
+  final int version;
+  final String id;
+  final String schoolId;
+  final String teacherId;
+
+  /// DATE as `YYYY-MM-DD`, local calendar — same rules as student attendance.
+  final String date;
+
+  /// `AttendanceStatus.wire` — the same five states, deliberately. One enum
+  /// serves both registers.
+  final String status;
+
+  /// `'08:05'`. Wall-clock text, not a timestamp: it is a time of day and
+  /// never needs a timezone. Null when the office did not record arrival.
+  final String? checkInTime;
+
+  /// 'Medical leave', 'Official duty'. Free text — leave categories vary by
+  /// school and guessing at this one's HR policy would be worse than nothing.
+  final String? remarks;
+  final String markedBy;
+  final String markedAt;
+  const TeacherAttendanceRow({
+    required this.updatedAt,
+    this.deletedAt,
+    this.serverSeq,
+    required this.version,
+    required this.id,
+    required this.schoolId,
+    required this.teacherId,
+    required this.date,
+    required this.status,
+    this.checkInTime,
+    this.remarks,
+    required this.markedBy,
+    required this.markedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['updated_at'] = Variable<String>(updatedAt);
+    if (!nullToAbsent || deletedAt != null) {
+      map['deleted_at'] = Variable<String>(deletedAt);
+    }
+    if (!nullToAbsent || serverSeq != null) {
+      map['server_seq'] = Variable<int>(serverSeq);
+    }
+    map['version'] = Variable<int>(version);
+    map['id'] = Variable<String>(id);
+    map['school_id'] = Variable<String>(schoolId);
+    map['teacher_id'] = Variable<String>(teacherId);
+    map['date'] = Variable<String>(date);
+    map['status'] = Variable<String>(status);
+    if (!nullToAbsent || checkInTime != null) {
+      map['check_in_time'] = Variable<String>(checkInTime);
+    }
+    if (!nullToAbsent || remarks != null) {
+      map['remarks'] = Variable<String>(remarks);
+    }
+    map['marked_by'] = Variable<String>(markedBy);
+    map['marked_at'] = Variable<String>(markedAt);
+    return map;
+  }
+
+  TeacherAttendanceCompanion toCompanion(bool nullToAbsent) {
+    return TeacherAttendanceCompanion(
+      updatedAt: Value(updatedAt),
+      deletedAt: deletedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(deletedAt),
+      serverSeq: serverSeq == null && nullToAbsent
+          ? const Value.absent()
+          : Value(serverSeq),
+      version: Value(version),
+      id: Value(id),
+      schoolId: Value(schoolId),
+      teacherId: Value(teacherId),
+      date: Value(date),
+      status: Value(status),
+      checkInTime: checkInTime == null && nullToAbsent
+          ? const Value.absent()
+          : Value(checkInTime),
+      remarks: remarks == null && nullToAbsent
+          ? const Value.absent()
+          : Value(remarks),
+      markedBy: Value(markedBy),
+      markedAt: Value(markedAt),
+    );
+  }
+
+  factory TeacherAttendanceRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return TeacherAttendanceRow(
+      updatedAt: serializer.fromJson<String>(json['updated_at']),
+      deletedAt: serializer.fromJson<String?>(json['deleted_at']),
+      serverSeq: serializer.fromJson<int?>(json['server_seq']),
+      version: serializer.fromJson<int>(json['version']),
+      id: serializer.fromJson<String>(json['id']),
+      schoolId: serializer.fromJson<String>(json['school_id']),
+      teacherId: serializer.fromJson<String>(json['teacher_id']),
+      date: serializer.fromJson<String>(json['date']),
+      status: serializer.fromJson<String>(json['status']),
+      checkInTime: serializer.fromJson<String?>(json['check_in_time']),
+      remarks: serializer.fromJson<String?>(json['remarks']),
+      markedBy: serializer.fromJson<String>(json['marked_by']),
+      markedAt: serializer.fromJson<String>(json['marked_at']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'updated_at': serializer.toJson<String>(updatedAt),
+      'deleted_at': serializer.toJson<String?>(deletedAt),
+      'server_seq': serializer.toJson<int?>(serverSeq),
+      'version': serializer.toJson<int>(version),
+      'id': serializer.toJson<String>(id),
+      'school_id': serializer.toJson<String>(schoolId),
+      'teacher_id': serializer.toJson<String>(teacherId),
+      'date': serializer.toJson<String>(date),
+      'status': serializer.toJson<String>(status),
+      'check_in_time': serializer.toJson<String?>(checkInTime),
+      'remarks': serializer.toJson<String?>(remarks),
+      'marked_by': serializer.toJson<String>(markedBy),
+      'marked_at': serializer.toJson<String>(markedAt),
+    };
+  }
+
+  TeacherAttendanceRow copyWith({
+    String? updatedAt,
+    Value<String?> deletedAt = const Value.absent(),
+    Value<int?> serverSeq = const Value.absent(),
+    int? version,
+    String? id,
+    String? schoolId,
+    String? teacherId,
+    String? date,
+    String? status,
+    Value<String?> checkInTime = const Value.absent(),
+    Value<String?> remarks = const Value.absent(),
+    String? markedBy,
+    String? markedAt,
+  }) => TeacherAttendanceRow(
+    updatedAt: updatedAt ?? this.updatedAt,
+    deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
+    serverSeq: serverSeq.present ? serverSeq.value : this.serverSeq,
+    version: version ?? this.version,
+    id: id ?? this.id,
+    schoolId: schoolId ?? this.schoolId,
+    teacherId: teacherId ?? this.teacherId,
+    date: date ?? this.date,
+    status: status ?? this.status,
+    checkInTime: checkInTime.present ? checkInTime.value : this.checkInTime,
+    remarks: remarks.present ? remarks.value : this.remarks,
+    markedBy: markedBy ?? this.markedBy,
+    markedAt: markedAt ?? this.markedAt,
+  );
+  TeacherAttendanceRow copyWithCompanion(TeacherAttendanceCompanion data) {
+    return TeacherAttendanceRow(
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
+      serverSeq: data.serverSeq.present ? data.serverSeq.value : this.serverSeq,
+      version: data.version.present ? data.version.value : this.version,
+      id: data.id.present ? data.id.value : this.id,
+      schoolId: data.schoolId.present ? data.schoolId.value : this.schoolId,
+      teacherId: data.teacherId.present ? data.teacherId.value : this.teacherId,
+      date: data.date.present ? data.date.value : this.date,
+      status: data.status.present ? data.status.value : this.status,
+      checkInTime: data.checkInTime.present
+          ? data.checkInTime.value
+          : this.checkInTime,
+      remarks: data.remarks.present ? data.remarks.value : this.remarks,
+      markedBy: data.markedBy.present ? data.markedBy.value : this.markedBy,
+      markedAt: data.markedAt.present ? data.markedAt.value : this.markedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TeacherAttendanceRow(')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('deletedAt: $deletedAt, ')
+          ..write('serverSeq: $serverSeq, ')
+          ..write('version: $version, ')
+          ..write('id: $id, ')
+          ..write('schoolId: $schoolId, ')
+          ..write('teacherId: $teacherId, ')
+          ..write('date: $date, ')
+          ..write('status: $status, ')
+          ..write('checkInTime: $checkInTime, ')
+          ..write('remarks: $remarks, ')
+          ..write('markedBy: $markedBy, ')
+          ..write('markedAt: $markedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    updatedAt,
+    deletedAt,
+    serverSeq,
+    version,
+    id,
+    schoolId,
+    teacherId,
+    date,
+    status,
+    checkInTime,
+    remarks,
+    markedBy,
+    markedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is TeacherAttendanceRow &&
+          other.updatedAt == this.updatedAt &&
+          other.deletedAt == this.deletedAt &&
+          other.serverSeq == this.serverSeq &&
+          other.version == this.version &&
+          other.id == this.id &&
+          other.schoolId == this.schoolId &&
+          other.teacherId == this.teacherId &&
+          other.date == this.date &&
+          other.status == this.status &&
+          other.checkInTime == this.checkInTime &&
+          other.remarks == this.remarks &&
+          other.markedBy == this.markedBy &&
+          other.markedAt == this.markedAt);
+}
+
+class TeacherAttendanceCompanion extends UpdateCompanion<TeacherAttendanceRow> {
+  final Value<String> updatedAt;
+  final Value<String?> deletedAt;
+  final Value<int?> serverSeq;
+  final Value<int> version;
+  final Value<String> id;
+  final Value<String> schoolId;
+  final Value<String> teacherId;
+  final Value<String> date;
+  final Value<String> status;
+  final Value<String?> checkInTime;
+  final Value<String?> remarks;
+  final Value<String> markedBy;
+  final Value<String> markedAt;
+  final Value<int> rowid;
+  const TeacherAttendanceCompanion({
+    this.updatedAt = const Value.absent(),
+    this.deletedAt = const Value.absent(),
+    this.serverSeq = const Value.absent(),
+    this.version = const Value.absent(),
+    this.id = const Value.absent(),
+    this.schoolId = const Value.absent(),
+    this.teacherId = const Value.absent(),
+    this.date = const Value.absent(),
+    this.status = const Value.absent(),
+    this.checkInTime = const Value.absent(),
+    this.remarks = const Value.absent(),
+    this.markedBy = const Value.absent(),
+    this.markedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  TeacherAttendanceCompanion.insert({
+    required String updatedAt,
+    this.deletedAt = const Value.absent(),
+    this.serverSeq = const Value.absent(),
+    this.version = const Value.absent(),
+    required String id,
+    required String schoolId,
+    required String teacherId,
+    required String date,
+    required String status,
+    this.checkInTime = const Value.absent(),
+    this.remarks = const Value.absent(),
+    required String markedBy,
+    required String markedAt,
+    this.rowid = const Value.absent(),
+  }) : updatedAt = Value(updatedAt),
+       id = Value(id),
+       schoolId = Value(schoolId),
+       teacherId = Value(teacherId),
+       date = Value(date),
+       status = Value(status),
+       markedBy = Value(markedBy),
+       markedAt = Value(markedAt);
+  static Insertable<TeacherAttendanceRow> custom({
+    Expression<String>? updatedAt,
+    Expression<String>? deletedAt,
+    Expression<int>? serverSeq,
+    Expression<int>? version,
+    Expression<String>? id,
+    Expression<String>? schoolId,
+    Expression<String>? teacherId,
+    Expression<String>? date,
+    Expression<String>? status,
+    Expression<String>? checkInTime,
+    Expression<String>? remarks,
+    Expression<String>? markedBy,
+    Expression<String>? markedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (deletedAt != null) 'deleted_at': deletedAt,
+      if (serverSeq != null) 'server_seq': serverSeq,
+      if (version != null) 'version': version,
+      if (id != null) 'id': id,
+      if (schoolId != null) 'school_id': schoolId,
+      if (teacherId != null) 'teacher_id': teacherId,
+      if (date != null) 'date': date,
+      if (status != null) 'status': status,
+      if (checkInTime != null) 'check_in_time': checkInTime,
+      if (remarks != null) 'remarks': remarks,
+      if (markedBy != null) 'marked_by': markedBy,
+      if (markedAt != null) 'marked_at': markedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  TeacherAttendanceCompanion copyWith({
+    Value<String>? updatedAt,
+    Value<String?>? deletedAt,
+    Value<int?>? serverSeq,
+    Value<int>? version,
+    Value<String>? id,
+    Value<String>? schoolId,
+    Value<String>? teacherId,
+    Value<String>? date,
+    Value<String>? status,
+    Value<String?>? checkInTime,
+    Value<String?>? remarks,
+    Value<String>? markedBy,
+    Value<String>? markedAt,
+    Value<int>? rowid,
+  }) {
+    return TeacherAttendanceCompanion(
+      updatedAt: updatedAt ?? this.updatedAt,
+      deletedAt: deletedAt ?? this.deletedAt,
+      serverSeq: serverSeq ?? this.serverSeq,
+      version: version ?? this.version,
+      id: id ?? this.id,
+      schoolId: schoolId ?? this.schoolId,
+      teacherId: teacherId ?? this.teacherId,
+      date: date ?? this.date,
+      status: status ?? this.status,
+      checkInTime: checkInTime ?? this.checkInTime,
+      remarks: remarks ?? this.remarks,
+      markedBy: markedBy ?? this.markedBy,
+      markedAt: markedAt ?? this.markedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<String>(updatedAt.value);
+    }
+    if (deletedAt.present) {
+      map['deleted_at'] = Variable<String>(deletedAt.value);
+    }
+    if (serverSeq.present) {
+      map['server_seq'] = Variable<int>(serverSeq.value);
+    }
+    if (version.present) {
+      map['version'] = Variable<int>(version.value);
+    }
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (schoolId.present) {
+      map['school_id'] = Variable<String>(schoolId.value);
+    }
+    if (teacherId.present) {
+      map['teacher_id'] = Variable<String>(teacherId.value);
+    }
+    if (date.present) {
+      map['date'] = Variable<String>(date.value);
+    }
+    if (status.present) {
+      map['status'] = Variable<String>(status.value);
+    }
+    if (checkInTime.present) {
+      map['check_in_time'] = Variable<String>(checkInTime.value);
+    }
+    if (remarks.present) {
+      map['remarks'] = Variable<String>(remarks.value);
+    }
+    if (markedBy.present) {
+      map['marked_by'] = Variable<String>(markedBy.value);
+    }
+    if (markedAt.present) {
+      map['marked_at'] = Variable<String>(markedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('TeacherAttendanceCompanion(')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('deletedAt: $deletedAt, ')
+          ..write('serverSeq: $serverSeq, ')
+          ..write('version: $version, ')
+          ..write('id: $id, ')
+          ..write('schoolId: $schoolId, ')
+          ..write('teacherId: $teacherId, ')
+          ..write('date: $date, ')
+          ..write('status: $status, ')
+          ..write('checkInTime: $checkInTime, ')
+          ..write('remarks: $remarks, ')
+          ..write('markedBy: $markedBy, ')
+          ..write('markedAt: $markedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $ExamsTable extends Exams with TableInfo<$ExamsTable, Exam> {
   @override
   final GeneratedDatabase attachedDatabase;
@@ -16520,6 +17309,8 @@ abstract class _$AppDatabase extends GeneratedDatabase {
       $TeacherClassAssignmentsTable(this);
   late final $StudentsTable students = $StudentsTable(this);
   late final $AttendanceTable attendance = $AttendanceTable(this);
+  late final $TeacherAttendanceTable teacherAttendance =
+      $TeacherAttendanceTable(this);
   late final $ExamsTable exams = $ExamsTable(this);
   late final $MarksTable marks = $MarksTable(this);
   late final $FeeStructuresTable feeStructures = $FeeStructuresTable(this);
@@ -16548,6 +17339,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     teacherClassAssignments,
     students,
     attendance,
+    teacherAttendance,
     exams,
     marks,
     feeStructures,
@@ -19707,6 +20499,373 @@ typedef $$AttendanceTableProcessedTableManager =
         BaseReferences<_$AppDatabase, $AttendanceTable, AttendanceRow>,
       ),
       AttendanceRow,
+      PrefetchHooks Function()
+    >;
+typedef $$TeacherAttendanceTableCreateCompanionBuilder =
+    TeacherAttendanceCompanion Function({
+      required String updatedAt,
+      Value<String?> deletedAt,
+      Value<int?> serverSeq,
+      Value<int> version,
+      required String id,
+      required String schoolId,
+      required String teacherId,
+      required String date,
+      required String status,
+      Value<String?> checkInTime,
+      Value<String?> remarks,
+      required String markedBy,
+      required String markedAt,
+      Value<int> rowid,
+    });
+typedef $$TeacherAttendanceTableUpdateCompanionBuilder =
+    TeacherAttendanceCompanion Function({
+      Value<String> updatedAt,
+      Value<String?> deletedAt,
+      Value<int?> serverSeq,
+      Value<int> version,
+      Value<String> id,
+      Value<String> schoolId,
+      Value<String> teacherId,
+      Value<String> date,
+      Value<String> status,
+      Value<String?> checkInTime,
+      Value<String?> remarks,
+      Value<String> markedBy,
+      Value<String> markedAt,
+      Value<int> rowid,
+    });
+
+class $$TeacherAttendanceTableFilterComposer
+    extends Composer<_$AppDatabase, $TeacherAttendanceTable> {
+  $$TeacherAttendanceTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get serverSeq => $composableBuilder(
+    column: $table.serverSeq,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get version => $composableBuilder(
+    column: $table.version,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get schoolId => $composableBuilder(
+    column: $table.schoolId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get teacherId => $composableBuilder(
+    column: $table.teacherId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get date => $composableBuilder(
+    column: $table.date,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get checkInTime => $composableBuilder(
+    column: $table.checkInTime,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get remarks => $composableBuilder(
+    column: $table.remarks,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get markedBy => $composableBuilder(
+    column: $table.markedBy,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get markedAt => $composableBuilder(
+    column: $table.markedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$TeacherAttendanceTableOrderingComposer
+    extends Composer<_$AppDatabase, $TeacherAttendanceTable> {
+  $$TeacherAttendanceTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get serverSeq => $composableBuilder(
+    column: $table.serverSeq,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get version => $composableBuilder(
+    column: $table.version,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get schoolId => $composableBuilder(
+    column: $table.schoolId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get teacherId => $composableBuilder(
+    column: $table.teacherId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get date => $composableBuilder(
+    column: $table.date,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get checkInTime => $composableBuilder(
+    column: $table.checkInTime,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get remarks => $composableBuilder(
+    column: $table.remarks,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get markedBy => $composableBuilder(
+    column: $table.markedBy,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get markedAt => $composableBuilder(
+    column: $table.markedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$TeacherAttendanceTableAnnotationComposer
+    extends Composer<_$AppDatabase, $TeacherAttendanceTable> {
+  $$TeacherAttendanceTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<String> get deletedAt =>
+      $composableBuilder(column: $table.deletedAt, builder: (column) => column);
+
+  GeneratedColumn<int> get serverSeq =>
+      $composableBuilder(column: $table.serverSeq, builder: (column) => column);
+
+  GeneratedColumn<int> get version =>
+      $composableBuilder(column: $table.version, builder: (column) => column);
+
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get schoolId =>
+      $composableBuilder(column: $table.schoolId, builder: (column) => column);
+
+  GeneratedColumn<String> get teacherId =>
+      $composableBuilder(column: $table.teacherId, builder: (column) => column);
+
+  GeneratedColumn<String> get date =>
+      $composableBuilder(column: $table.date, builder: (column) => column);
+
+  GeneratedColumn<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<String> get checkInTime => $composableBuilder(
+    column: $table.checkInTime,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get remarks =>
+      $composableBuilder(column: $table.remarks, builder: (column) => column);
+
+  GeneratedColumn<String> get markedBy =>
+      $composableBuilder(column: $table.markedBy, builder: (column) => column);
+
+  GeneratedColumn<String> get markedAt =>
+      $composableBuilder(column: $table.markedAt, builder: (column) => column);
+}
+
+class $$TeacherAttendanceTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $TeacherAttendanceTable,
+          TeacherAttendanceRow,
+          $$TeacherAttendanceTableFilterComposer,
+          $$TeacherAttendanceTableOrderingComposer,
+          $$TeacherAttendanceTableAnnotationComposer,
+          $$TeacherAttendanceTableCreateCompanionBuilder,
+          $$TeacherAttendanceTableUpdateCompanionBuilder,
+          (
+            TeacherAttendanceRow,
+            BaseReferences<
+              _$AppDatabase,
+              $TeacherAttendanceTable,
+              TeacherAttendanceRow
+            >,
+          ),
+          TeacherAttendanceRow,
+          PrefetchHooks Function()
+        > {
+  $$TeacherAttendanceTableTableManager(
+    _$AppDatabase db,
+    $TeacherAttendanceTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$TeacherAttendanceTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$TeacherAttendanceTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$TeacherAttendanceTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> updatedAt = const Value.absent(),
+                Value<String?> deletedAt = const Value.absent(),
+                Value<int?> serverSeq = const Value.absent(),
+                Value<int> version = const Value.absent(),
+                Value<String> id = const Value.absent(),
+                Value<String> schoolId = const Value.absent(),
+                Value<String> teacherId = const Value.absent(),
+                Value<String> date = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<String?> checkInTime = const Value.absent(),
+                Value<String?> remarks = const Value.absent(),
+                Value<String> markedBy = const Value.absent(),
+                Value<String> markedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => TeacherAttendanceCompanion(
+                updatedAt: updatedAt,
+                deletedAt: deletedAt,
+                serverSeq: serverSeq,
+                version: version,
+                id: id,
+                schoolId: schoolId,
+                teacherId: teacherId,
+                date: date,
+                status: status,
+                checkInTime: checkInTime,
+                remarks: remarks,
+                markedBy: markedBy,
+                markedAt: markedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String updatedAt,
+                Value<String?> deletedAt = const Value.absent(),
+                Value<int?> serverSeq = const Value.absent(),
+                Value<int> version = const Value.absent(),
+                required String id,
+                required String schoolId,
+                required String teacherId,
+                required String date,
+                required String status,
+                Value<String?> checkInTime = const Value.absent(),
+                Value<String?> remarks = const Value.absent(),
+                required String markedBy,
+                required String markedAt,
+                Value<int> rowid = const Value.absent(),
+              }) => TeacherAttendanceCompanion.insert(
+                updatedAt: updatedAt,
+                deletedAt: deletedAt,
+                serverSeq: serverSeq,
+                version: version,
+                id: id,
+                schoolId: schoolId,
+                teacherId: teacherId,
+                date: date,
+                status: status,
+                checkInTime: checkInTime,
+                remarks: remarks,
+                markedBy: markedBy,
+                markedAt: markedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$TeacherAttendanceTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $TeacherAttendanceTable,
+      TeacherAttendanceRow,
+      $$TeacherAttendanceTableFilterComposer,
+      $$TeacherAttendanceTableOrderingComposer,
+      $$TeacherAttendanceTableAnnotationComposer,
+      $$TeacherAttendanceTableCreateCompanionBuilder,
+      $$TeacherAttendanceTableUpdateCompanionBuilder,
+      (
+        TeacherAttendanceRow,
+        BaseReferences<
+          _$AppDatabase,
+          $TeacherAttendanceTable,
+          TeacherAttendanceRow
+        >,
+      ),
+      TeacherAttendanceRow,
       PrefetchHooks Function()
     >;
 typedef $$ExamsTableCreateCompanionBuilder =
@@ -24062,6 +25221,8 @@ class $AppDatabaseManager {
       $$StudentsTableTableManager(_db, _db.students);
   $$AttendanceTableTableManager get attendance =>
       $$AttendanceTableTableManager(_db, _db.attendance);
+  $$TeacherAttendanceTableTableManager get teacherAttendance =>
+      $$TeacherAttendanceTableTableManager(_db, _db.teacherAttendance);
   $$ExamsTableTableManager get exams =>
       $$ExamsTableTableManager(_db, _db.exams);
   $$MarksTableTableManager get marks =>

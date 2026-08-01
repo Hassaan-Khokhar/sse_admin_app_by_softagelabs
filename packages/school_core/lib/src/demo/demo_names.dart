@@ -86,6 +86,20 @@ const List<String> demoFatherNames = [
   'Arshad Mahmood',
 ];
 
+/// Faculty. `title` is what appears next to the name on the staff register.
+const List<({String name, String title, String qualification})> demoTeachers = [
+  (name: 'Kamran Sheikh', title: 'Senior Mathematics Teacher', qualification: 'M.Sc Mathematics'),
+  (name: 'Nadia Aslam', title: 'English Teacher', qualification: 'M.A English'),
+  (name: 'Rizwan Haider', title: 'Physics Teacher', qualification: 'M.Sc Physics'),
+  (name: 'Shazia Bibi', title: 'Urdu Teacher', qualification: 'M.A Urdu'),
+  (name: 'Imran Qureshi', title: 'Chemistry Teacher', qualification: 'M.Sc Chemistry'),
+  (name: 'Farhana Malik', title: 'Islamiat Teacher', qualification: 'M.A Islamic Studies'),
+  (name: 'Tahir Mehmood', title: 'Computer Science Teacher', qualification: 'BS Computer Science'),
+  (name: 'Rukhsana Parveen', title: 'Pakistan Studies Teacher', qualification: 'M.A History'),
+  (name: 'Adnan Bashir', title: 'Sports & Physical Education', qualification: 'B.P.Ed'),
+  (name: 'Saima Yousaf', title: 'Junior Section Coordinator', qualification: 'M.Ed'),
+];
+
 /// The subjects every class takes. Same for all sections — that is the school
 /// model, versus the university one where each student picked their own
 /// courses (CLAUDE.md §11).

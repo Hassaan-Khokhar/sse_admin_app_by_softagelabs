@@ -3,6 +3,7 @@ import 'package:school_core/school_core.dart';
 
 import '../data/app_scope.dart';
 import '../data/attendance_repository.dart';
+import '../widgets/status_chip.dart';
 
 /// Daily attendance register — the screen the demo video is built around
 /// (CLAUDE.md §12, 0:30: wifi off on camera, then mark 40 students).
@@ -331,76 +332,13 @@ class _StudentRow extends StatelessWidget {
           for (final option in AttendanceStatus.values)
             Padding(
               padding: const EdgeInsets.only(left: 6),
-              child: _StatusChip(
+              child: StatusChip(
                 status: option,
                 selected: status == option,
                 onTap: () => onChanged(option),
               ),
             ),
         ],
-      ),
-    );
-  }
-}
-
-/// One of the five states, coloured to match the student app's calendar.
-///
-/// The colour contract is fixed in schema.sql §3 and shared with the mobile
-/// dev: present 🟢 · absent 🔴 · leave 🟡 · late 🟠 · holiday ⬜. Both apps must
-/// agree, or a parent comparing the two screens sees different answers.
-class _StatusChip extends StatelessWidget {
-  const _StatusChip({
-    required this.status,
-    required this.selected,
-    required this.onTap,
-  });
-
-  final AttendanceStatus status;
-  final bool selected;
-  final VoidCallback onTap;
-
-  static const _colors = {
-    AttendanceStatus.present: Color(0xFF16A34A),
-    AttendanceStatus.absent: Color(0xFFDC2626),
-    AttendanceStatus.leave: Color(0xFFCA8A04),
-    AttendanceStatus.arrivedLate: Color(0xFFEA580C),
-    AttendanceStatus.holiday: Color(0xFF6B7280),
-  };
-
-  static const _labels = {
-    AttendanceStatus.present: 'P',
-    AttendanceStatus.absent: 'A',
-    AttendanceStatus.leave: 'L',
-    AttendanceStatus.arrivedLate: 'Late',
-    AttendanceStatus.holiday: 'H',
-  };
-
-  @override
-  Widget build(BuildContext context) {
-    final color = _colors[status]!;
-    return Tooltip(
-      message: status.wire,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(6),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-          decoration: BoxDecoration(
-            color: selected ? color : color.withValues(alpha: 0.10),
-            borderRadius: BorderRadius.circular(6),
-            border: Border.all(
-              color: selected ? color : color.withValues(alpha: 0.35),
-            ),
-          ),
-          child: Text(
-            _labels[status]!,
-            style: TextStyle(
-              color: selected ? Colors.white : color,
-              fontWeight: FontWeight.w700,
-              fontSize: 12,
-            ),
-          ),
-        ),
       ),
     );
   }

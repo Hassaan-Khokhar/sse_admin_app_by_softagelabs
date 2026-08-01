@@ -64,6 +64,7 @@ class DemoSeeder {
     await _db.transaction(() async {
       await _seedSchool(now);
       await _seedPrincipal(now);
+      await _seedTeachers(now);
 
       var admissionCounter = 300;
       for (final spec in _classSpecs) {
@@ -81,6 +82,7 @@ class DemoSeeder {
       }
 
       await _seedAttendance(now);
+      await _seedTeacherAttendance(now);
     });
   }
 
@@ -126,6 +128,91 @@ class DemoSeeder {
           ),
         );
   }
+
+  Future<void> _seedTeachers(String now) async {
+    for (var i = 0; i < demoTeachers.length; i++) {
+      final teacher = demoTeachers[i];
+      await _db.into(_db.teachers).insertOnConflictUpdate(
+            TeachersCompanion.insert(
+              id: demoId('teacher/$i'),
+              schoolId: schoolId,
+              employeeNo: Value('EMP-${100 + i}'),
+              fullName: teacher.name,
+              qualification: Value(teacher.qualification),
+              // CNIC and phone are staff HR data. They are stored because the
+              // office needs them, and RLS keeps them away from students —
+              // `teachers` has no student policy (migration 001).
+              cnic: Value('35202-${1000000 + i * 7919}-${i % 9 + 1}'),
+              phone: Value('0301-${2000000 + i * 4567}'),
+              joiningDate: Value('${2019 + (i % 6)}-04-01'),
+              updatedAt: now,
+            ),
+          );
+    }
+  }
+
+  /// Staff register for the same period as the student one.
+  ///
+  /// Teachers are absent less often than students, and their absences skew
+  /// towards `leave` rather than unexplained `absent` — a teacher who simply
+  /// does not turn up is rare, whereas casual and medical leave are routine.
+  /// A flat copy of the student distribution would look wrong to a principal.
+  Future<void> _seedTeacherAttendance(String now) async {
+    final teachers = await _db.select(_db.teachers).get();
+    final today = dateOnly(DateTime.now());
+
+    for (var dayOffset = _attendanceDays; dayOffset >= 1; dayOffset--) {
+      final date = today.subtract(Duration(days: dayOffset));
+      if (date.weekday == DateTime.sunday) continue;
+
+      final dateKey = encodeDate(date);
+
+      for (final teacher in teachers) {
+        final status = _rollTeacherStatus();
+        await _db.into(_db.teacherAttendance).insertOnConflictUpdate(
+              TeacherAttendanceCompanion.insert(
+                id: demoId('teacher-attendance/${teacher.id}/$dateKey'),
+                schoolId: schoolId,
+                teacherId: teacher.id,
+                date: dateKey,
+                status: status.wire,
+                checkInTime: Value(_checkInFor(status)),
+                remarks: Value(
+                  status == AttendanceStatus.leave ? _leaveReason() : null,
+                ),
+                markedBy: principalUserId,
+                markedAt: now,
+                updatedAt: now,
+              ),
+            );
+      }
+    }
+  }
+
+  AttendanceStatus _rollTeacherStatus() {
+    final roll = _random.nextInt(100);
+    if (roll < 93) return AttendanceStatus.present;
+    if (roll < 97) return AttendanceStatus.leave;
+    if (roll < 99) return AttendanceStatus.arrivedLate;
+    return AttendanceStatus.absent;
+  }
+
+  /// School starts at 08:00. Present staff arrive a few minutes either side;
+  /// late ones after the bell. Absent and on-leave staff have no arrival time.
+  String? _checkInFor(AttendanceStatus status) => switch (status) {
+        AttendanceStatus.present =>
+          '07:${(45 + _random.nextInt(15)).toString().padLeft(2, '0')}',
+        AttendanceStatus.arrivedLate =>
+          '08:${(15 + _random.nextInt(40)).toString().padLeft(2, '0')}',
+        _ => null,
+      };
+
+  String _leaveReason() => const [
+        'Casual leave',
+        'Medical leave',
+        'Official duty',
+        'Family emergency',
+      ][_random.nextInt(4)];
 
   Future<void> _seedClass(
     int grade,

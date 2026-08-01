@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:drift/drift.dart';
 import 'package:school_core/school_core.dart';
 
+import '../data/supabase_bootstrap.dart';
+import 'sync_engine.dart';
 import 'sync_status.dart';
 
 /// Drives sync and publishes what the status bar shows.
@@ -87,22 +89,74 @@ class SyncService {
 
   /// Pushes the outbox, then pulls changes.
   ///
-  /// NOT IMPLEMENTED YET — the transport is the next piece of work. The status
-  /// plumbing above is real and driven by the actual outbox table; this method
-  /// is the only stub, and it is deliberately obvious rather than quietly
-  /// pretending to succeed.
+  /// **Push before pull, always** (CLAUDE.md §10). Pulling first would fetch
+  /// the server's stale copy of a row that was just changed locally and
+  /// overwrite the local edit — the principal's change would silently vanish.
   Future<void> syncNow() async {
     if (_status.phase == SyncPhase.syncing) return;
 
-    _emit(_status.copyWith(phase: SyncPhase.syncing, clearError: true));
-    try {
-      // TODO(sync): push the outbox in batches of `syncPushBatchSize`, each op
-      //   carrying its `op_id` so a retry after a dropped connection dedupes
-      //   server-side instead of duplicating. Then pull. Push before pull.
-      throw UnimplementedError('Sync transport not built yet');
-    } on Object catch (error) {
-      _fail(error.toString());
+    if (!await SupabaseBootstrap.ready) {
+      _fail('No connection — changes stay queued.');
+      return;
     }
+
+    _emit(_status.copyWith(phase: SyncPhase.syncing, clearError: true));
+    final engine = SyncEngine(_db);
+
+    try {
+      // Drain in batches until empty. Bulk challan generation puts one row per
+      // student in the outbox — 800 at a real school — and pushing those as a
+      // single request over this connection would never complete.
+      var guard = 0;
+      while (await engine.hasPending()) {
+        await engine.push();
+        if (++guard > 100) {
+          throw StateError('Outbox did not drain after 100 batches');
+        }
+      }
+
+      await engine.pull(since: await _readCursor());
+
+      final now = DateTime.now();
+      await _writeCursor(encodeTimestamp(now));
+      _emit(SyncStatus(
+        phase: SyncPhase.idle,
+        pendingCount: 0,
+        lastSyncedAt: now,
+      ));
+    } on Object catch (error) {
+      // Nothing is lost on failure: un-pushed rows are still in the outbox and
+      // the cursor is not advanced, so the next attempt repeats the work.
+      _fail(_readable(error));
+    }
+  }
+
+  /// Turns transport noise into something a principal can act on.
+  String _readable(Object error) {
+    final text = error.toString();
+    if (text.contains('SocketException') || text.contains('Failed host')) {
+      return 'No internet — changes stay queued.';
+    }
+    if (text.contains('JWT') || text.contains('401')) {
+      return 'Session expired — sign in again.';
+    }
+    if (text.contains('row-level security') || text.contains('42501')) {
+      return 'Not permitted. Is this account a super_admin?';
+    }
+    return text;
+  }
+
+  Future<String?> _readCursor() async {
+    final query = _db.select(_db.syncState)
+      ..where((s) => s.key.equals(SyncStateKeys.lastSyncedAt));
+    final row = await query.getSingleOrNull();
+    return row?.value;
+  }
+
+  Future<void> _writeCursor(String value) async {
+    await _db.into(_db.syncState).insertOnConflictUpdate(
+          SyncStateEntry(key: SyncStateKeys.lastSyncedAt, value: value),
+        );
   }
 
   Future<void> dispose() async {

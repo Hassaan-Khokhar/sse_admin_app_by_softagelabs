@@ -6,6 +6,7 @@ import 'data/auth_service.dart';
 import 'sync/sync_service.dart';
 import 'screens/attendance_screen.dart';
 import 'screens/dashboard_screen.dart';
+import 'screens/faculty_screen.dart';
 import 'screens/login_screen.dart';
 import 'widgets/sync_status_bar.dart';
 
@@ -76,6 +77,7 @@ enum AdminSection {
   dashboard('Dashboard', Icons.dashboard_outlined),
   classes('Classes', Icons.meeting_room_outlined),
   students('Students', Icons.people_outline),
+  faculty('Faculty', Icons.badge_outlined),
   attendance('Attendance', Icons.fact_check_outlined),
   marks('Marks', Icons.school_outlined),
   fees('Fees', Icons.receipt_long_outlined),
@@ -108,41 +110,60 @@ class _AdminShellState extends State<AdminShell> {
           Expanded(
             child: Row(
               children: [
-                NavigationRail(
-                  selectedIndex: _section.index,
-                  onDestinationSelected: (index) =>
-                      setState(() => _section = AdminSection.values[index]),
-                  labelType: NavigationRailLabelType.all,
-                  leading: const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 16),
-                    child: Icon(Icons.account_balance, size: 28),
-                  ),
-                  trailing: Expanded(
-                    child: Align(
-                      alignment: Alignment.bottomCenter,
-                      child: Padding(
-                        padding: const EdgeInsets.only(bottom: 16),
-                        child: IconButton(
-                          tooltip: widget.auth.isSignedIn
-                              ? 'Sign out (${widget.auth.user?.email})'
-                              : 'Working offline — sign in',
-                          icon: Icon(
-                            widget.auth.isSignedIn
-                                ? Icons.logout
-                                : Icons.person_off_outlined,
+                // NavigationRail does not scroll on its own, so nine
+                // destinations plus the trailing button overflow a short
+                // window. This makes the rail scroll only when it has to:
+                // IntrinsicHeight lets it keep its natural size, and the
+                // ConstrainedBox stretches it to fill a tall window so the
+                // trailing sign-out button still sits at the bottom.
+                //
+                // Sections will keep being added, so a fixed layout would just
+                // break again at the next one.
+                LayoutBuilder(
+                  builder: (context, constraints) => SingleChildScrollView(
+                    child: ConstrainedBox(
+                      constraints:
+                          BoxConstraints(minHeight: constraints.maxHeight),
+                      child: IntrinsicHeight(
+                        child: NavigationRail(
+                          selectedIndex: _section.index,
+                          onDestinationSelected: (index) => setState(
+                              () => _section = AdminSection.values[index]),
+                          labelType: NavigationRailLabelType.all,
+                          leading: const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 16),
+                            child: Icon(Icons.account_balance, size: 28),
                           ),
-                          onPressed: widget.auth.signOut,
+                          trailing: Expanded(
+                            child: Align(
+                              alignment: Alignment.bottomCenter,
+                              child: Padding(
+                                padding: const EdgeInsets.only(bottom: 16),
+                                child: IconButton(
+                                  tooltip: widget.auth.isSignedIn
+                                      ? 'Sign out (${widget.auth.user?.email})'
+                                      : 'Working offline — sign in',
+                                  icon: Icon(
+                                    widget.auth.isSignedIn
+                                        ? Icons.logout
+                                        : Icons.person_off_outlined,
+                                  ),
+                                  onPressed: widget.auth.signOut,
+                                ),
+                              ),
+                            ),
+                          ),
+                          destinations: [
+                            for (final section in AdminSection.values)
+                              NavigationRailDestination(
+                                icon: Icon(section.icon),
+                                label: Text(section.label),
+                              ),
+                          ],
                         ),
                       ),
                     ),
                   ),
-                  destinations: [
-                    for (final section in AdminSection.values)
-                      NavigationRailDestination(
-                        icon: Icon(section.icon),
-                        label: Text(section.label),
-                      ),
-                  ],
                 ),
                 const VerticalDivider(width: 1),
                 Expanded(child: _buildSection()),
@@ -161,6 +182,7 @@ class _AdminShellState extends State<AdminShell> {
   Widget _buildSection() => switch (_section) {
         AdminSection.dashboard => const DashboardScreen(),
         AdminSection.attendance => const AttendanceScreen(),
+        AdminSection.faculty => const FacultyScreen(),
         _ => _NotBuiltYet(section: _section),
       };
 }
