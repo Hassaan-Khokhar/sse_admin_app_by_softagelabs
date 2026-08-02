@@ -65,6 +65,31 @@ abstract final class AppTheme {
   static const statusLate = Color(0xFFEA580C);
   static const statusHoliday = Color(0xFF6B7280);
 
+  // ── navigation ───────────────────────────────────────────────────────────
+
+  /// A hue per section of the app.
+  ///
+  /// Wider than the validated five-colour metric set, and that is fine here
+  /// for a specific reason: in the rail, colour is **not** the identity
+  /// carrier. Every item shows a distinct icon and its name in words, so a
+  /// reader who cannot separate two hues loses nothing — they are reading the
+  /// label. The colour is a landmark that makes "Fees is the orange one"
+  /// learnable after a week of daily use.
+  ///
+  /// This is the opposite of the dashboard metric cards, where colour encodes
+  /// which series a bar belongs to and therefore had to be validated.
+  static const navDashboard = Color(0xFF1B3A6B);
+  static const navClasses = Color(0xFF0E7490);
+  static const navStudents = Color(0xFF0072B2);
+  static const navFaculty = Color(0xFF009E73);
+  static const navAttendance = Color(0xFF15803D);
+  static const navMarks = Color(0xFF7C3AED);
+  static const navFees = Color(0xFFD55E00);
+  static const navTimetable = Color(0xFFB45309);
+  static const navAssignments = Color(0xFFBE185D);
+  static const navNotices = Color(0xFFC2410C);
+  static const navLostFound = Color(0xFF475569);
+
   static const radius = 12.0;
   static const radiusSmall = 8.0;
 

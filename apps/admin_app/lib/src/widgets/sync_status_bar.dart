@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../data/app_scope.dart';
 import '../sync/sync_status.dart';
+import '../theme/app_theme.dart';
 
 /// The sync status bar.
 ///
@@ -39,8 +40,11 @@ class SyncStatusBar extends StatelessWidget {
             // technically up yet flaky, which is the school's usual state.
             onTap: status.phase == SyncPhase.syncing ? null : sync.syncNow,
             child: Container(
-              height: 40,
-              padding: const EdgeInsets.symmetric(horizontal: 16),
+              height: 42,
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              decoration: const BoxDecoration(
+                border: Border(top: BorderSide(color: AppTheme.hairline)),
+              ),
               child: Row(
                 children: [
                   _StatusIcon(phase: status.phase, color: palette.foreground),

@@ -16,6 +16,8 @@ import 'screens/fees_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/marks_screen.dart';
 import 'screens/students_screen.dart';
+import 'theme/app_theme.dart';
+import 'widgets/app_sidebar.dart';
 import 'widgets/sync_status_bar.dart';
 
 class AdminApp extends StatefulWidget {
@@ -56,10 +58,7 @@ class _AdminAppState extends State<AdminApp> {
       child: MaterialApp(
         title: 'SSE School — Admin',
         debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          colorSchemeSeed: const Color(0xFF1E40AF),
-          useMaterial3: true,
-        ),
+        theme: AppTheme.light(),
         home: AnimatedBuilder(
           animation: _auth,
           builder: (context, _) => switch (_auth.state) {
@@ -83,22 +82,26 @@ class _Splash extends StatelessWidget {
 
 /// Sections of the admin app, per CLAUDE.md §9.
 enum AdminSection {
-  dashboard('Dashboard', Icons.dashboard_outlined),
-  classes('Classes', Icons.meeting_room_outlined),
-  students('Students', Icons.people_outline),
-  faculty('Faculty', Icons.badge_outlined),
-  attendance('Attendance', Icons.fact_check_outlined),
-  marks('Marks', Icons.school_outlined),
-  fees('Fees', Icons.receipt_long_outlined),
-  timetable('Timetable', Icons.schedule_outlined),
-  assignments('Assignments', Icons.assignment_outlined),
-  notices('Notices', Icons.campaign_outlined),
-  lostFound('Lost & Found', Icons.search_outlined);
+  dashboard('Dashboard', Icons.dashboard_rounded, AppTheme.navDashboard),
+  classes('Classes', Icons.meeting_room_rounded, AppTheme.navClasses),
+  students('Students', Icons.groups_rounded, AppTheme.navStudents),
+  faculty('Faculty', Icons.badge_rounded, AppTheme.navFaculty),
+  attendance('Attendance', Icons.fact_check_rounded, AppTheme.navAttendance),
+  marks('Marks', Icons.school_rounded, AppTheme.navMarks),
+  fees('Fees', Icons.payments_rounded, AppTheme.navFees),
+  timetable('Timetable', Icons.calendar_month_rounded, AppTheme.navTimetable),
+  assignments('Assignments', Icons.assignment_rounded, AppTheme.navAssignments),
+  notices('Notices', Icons.campaign_rounded, AppTheme.navNotices),
+  lostFound('Lost & Found', Icons.travel_explore_rounded, AppTheme.navLostFound);
 
-  const AdminSection(this.label, this.icon);
+  const AdminSection(this.label, this.icon, this.color);
 
   final String label;
   final IconData icon;
+
+  /// Landmark colour for the rail. See AppTheme's note on why this set is
+  /// wider than the validated metric palette.
+  final Color color;
 }
 
 class AdminShell extends StatefulWidget {
@@ -121,62 +124,32 @@ class _AdminShellState extends State<AdminShell> {
           Expanded(
             child: Row(
               children: [
-                // NavigationRail does not scroll on its own, so nine
-                // destinations plus the trailing button overflow a short
-                // window. This makes the rail scroll only when it has to:
-                // IntrinsicHeight lets it keep its natural size, and the
-                // ConstrainedBox stretches it to fill a tall window so the
-                // trailing sign-out button still sits at the bottom.
-                //
-                // Sections will keep being added, so a fixed layout would just
-                // break again at the next one.
-                LayoutBuilder(
-                  builder: (context, constraints) => SingleChildScrollView(
-                    child: ConstrainedBox(
-                      constraints:
-                          BoxConstraints(minHeight: constraints.maxHeight),
-                      child: IntrinsicHeight(
-                        child: NavigationRail(
-                          selectedIndex: _section.index,
-                          onDestinationSelected: (index) => setState(
-                              () => _section = AdminSection.values[index]),
-                          labelType: NavigationRailLabelType.all,
-                          leading: const Padding(
-                            padding: EdgeInsets.symmetric(vertical: 16),
-                            child: Icon(Icons.account_balance, size: 28),
-                          ),
-                          trailing: Expanded(
-                            child: Align(
-                              alignment: Alignment.bottomCenter,
-                              child: Padding(
-                                padding: const EdgeInsets.only(bottom: 16),
-                                child: IconButton(
-                                  tooltip: widget.auth.isSignedIn
-                                      ? 'Sign out (${widget.auth.user?.email})'
-                                      : 'Working offline — sign in',
-                                  icon: Icon(
-                                    widget.auth.isSignedIn
-                                        ? Icons.logout
-                                        : Icons.person_off_outlined,
-                                  ),
-                                  onPressed: widget.auth.signOut,
-                                ),
-                              ),
-                            ),
-                          ),
-                          destinations: [
-                            for (final section in AdminSection.values)
-                              NavigationRailDestination(
-                                icon: Icon(section.icon),
-                                label: Text(section.label),
-                              ),
-                          ],
-                        ),
+                AppSidebar(
+                  items: [
+                    for (final section in AdminSection.values)
+                      (
+                        label: section.label,
+                        icon: section.icon,
+                        color: section.color,
                       ),
+                  ],
+                  selectedIndex: _section.index,
+                  onSelected: (index) =>
+                      setState(() => _section = AdminSection.values[index]),
+                  footer: IconButton(
+                    tooltip: widget.auth.isSignedIn
+                        ? 'Sign out (${widget.auth.user?.email})'
+                        : 'Working offline — sign in',
+                    icon: Icon(
+                      widget.auth.isSignedIn
+                          ? Icons.logout_rounded
+                          : Icons.person_off_rounded,
+                      size: 19,
+                      color: AppTheme.inkMuted,
                     ),
+                    onPressed: widget.auth.signOut,
                   ),
                 ),
-                const VerticalDivider(width: 1),
                 Expanded(child: _buildSection()),
               ],
             ),

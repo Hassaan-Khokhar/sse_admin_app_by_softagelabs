@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:school_core/school_core.dart';
 
+import '../theme/app_theme.dart';
+
 /// One of the five attendance states, as a tappable chip.
 ///
 /// Shared by the student register and the faculty register so the two cannot
@@ -25,11 +27,11 @@ class StatusChip extends StatelessWidget {
   final VoidCallback onTap;
 
   static const colors = {
-    AttendanceStatus.present: Color(0xFF16A34A),
-    AttendanceStatus.absent: Color(0xFFDC2626),
-    AttendanceStatus.leave: Color(0xFFCA8A04),
-    AttendanceStatus.arrivedLate: Color(0xFFEA580C),
-    AttendanceStatus.holiday: Color(0xFF6B7280),
+    AttendanceStatus.present: AppTheme.statusPresent,
+    AttendanceStatus.absent: AppTheme.statusAbsent,
+    AttendanceStatus.leave: AppTheme.statusLeave,
+    AttendanceStatus.arrivedLate: AppTheme.statusLate,
+    AttendanceStatus.holiday: AppTheme.statusHoliday,
   };
 
   static const labels = {
