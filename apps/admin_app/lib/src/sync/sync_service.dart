@@ -1,7 +1,9 @@
 import 'dart:async';
 
 import 'package:drift/drift.dart';
+import 'package:flutter/foundation.dart';
 import 'package:school_core/school_core.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' show PostgrestException;
 
 import '../data/supabase_bootstrap.dart';
 import 'sync_engine.dart';
@@ -177,10 +179,27 @@ class SyncService {
   }
 
   /// Turns transport noise into something a principal can act on.
+  ///
+  /// The raw error is always logged first. A friendly message is right for the
+  /// status bar, but it must never be the ONLY record — a mapped string like
+  /// "session expired" is a guess about a cause, and debugging it without the
+  /// original text is guesswork on top of guesswork.
   String _readable(Object error) {
     final text = error.toString();
+    debugPrint('SYNC FAILED — raw error: $text');
+    if (error is PostgrestException) {
+      debugPrint(
+        '  code=${error.code} details=${error.details} hint=${error.hint}',
+      );
+    }
     if (text.contains('SocketException') || text.contains('Failed host')) {
       return 'No internet — changes stay queued.';
+    }
+    // Checked BEFORE the JWT case: a revoked or wrong publishable key also
+    // returns 401, and reporting it as "session expired" sends whoever is
+    // debugging to the login screen instead of to the key in the config.
+    if (text.contains('Unregistered API key') || text.contains('Invalid API key')) {
+      return 'App key rejected by the server — it may have been rotated.';
     }
     if (text.contains('JWT') || text.contains('401')) {
       return 'Session expired — sign in again.';

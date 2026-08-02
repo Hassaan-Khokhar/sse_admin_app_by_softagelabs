@@ -31,7 +31,7 @@ abstract final class SupabaseConfig {
   /// signed-in user is entitled to.
   static const String publishableKey = String.fromEnvironment(
     'SUPABASE_PUBLISHABLE_KEY',
-    defaultValue: 'sb_publishable_AivqkBQTUIK2J5bGRaSE3Q_ZLjjzQs7',
+    defaultValue: 'sb_publishable_t-8uX6YDIR9wyutvjcO2SA__G5XSO-V',
   );
 
   // ==========================================================================

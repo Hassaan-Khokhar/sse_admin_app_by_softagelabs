@@ -5,9 +5,15 @@ import 'data/app_scope.dart';
 import 'data/auth_service.dart';
 import 'sync/sync_service.dart';
 import 'screens/attendance_screen.dart';
+import 'screens/classes_screen.dart';
 import 'screens/dashboard_screen.dart';
+import 'screens/lost_found_screen.dart';
+import 'screens/notices_screen.dart';
 import 'screens/faculty_screen.dart';
+import 'screens/fees_screen.dart';
 import 'screens/login_screen.dart';
+import 'screens/marks_screen.dart';
+import 'screens/students_screen.dart';
 import 'widgets/sync_status_bar.dart';
 
 class AdminApp extends StatefulWidget {
@@ -183,30 +189,15 @@ class _AdminShellState extends State<AdminShell> {
         AdminSection.dashboard => const DashboardScreen(),
         AdminSection.attendance => const AttendanceScreen(),
         AdminSection.faculty => const FacultyAttendanceView(),
-        _ => _NotBuiltYet(section: _section),
+        AdminSection.students => const StudentsScreen(),
+        AdminSection.fees => const FeesScreen(),
+        AdminSection.marks => const MarksScreen(),
+        AdminSection.classes => const ClassesScreen(),
+        AdminSection.notices => const NoticesScreen(),
+        AdminSection.lostFound => const LostFoundScreen(),
       };
 }
 
-/// Honest placeholder. Says what belongs here rather than pretending to work.
-class _NotBuiltYet extends StatelessWidget {
-  const _NotBuiltYet({required this.section});
-
-  final AdminSection section;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(section.icon, size: 48, color: theme.disabledColor),
-          const SizedBox(height: 12),
-          Text(section.label, style: theme.textTheme.titleLarge),
-          const SizedBox(height: 4),
-          Text('Not built yet', style: theme.textTheme.bodyMedium),
-        ],
-      ),
-    );
-  }
-}
+// Every section now has a real screen — the "Not built yet" placeholder that
+// lived here is gone, and the switch above is exhaustive over AdminSection so
+// the analyzer will flag any future section that forgets one.
