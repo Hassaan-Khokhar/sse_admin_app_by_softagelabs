@@ -138,8 +138,13 @@ class SyncService {
 
     // Not signed in means every write is denied by RLS. Say so rather than
     // letting the request fail with a 401 the principal cannot interpret.
+    //
+    // Reported even on a silent run, unlike being offline. Offline is a
+    // transient condition that fixes itself; being signed out never does, and
+    // staying quiet about it means the outbox grows all week while the bar
+    // cheerfully shows nothing wrong.
     if (SupabaseBootstrap.client.auth.currentUser == null) {
-      if (!silent) _fail('Sign in to sync. Changes are safe and stay queued.');
+      _fail('Sign in to sync. Changes are safe and stay queued.');
       return;
     }
 
