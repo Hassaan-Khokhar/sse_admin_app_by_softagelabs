@@ -3,6 +3,7 @@ import 'package:flutter/widgets.dart';
 import 'package:school_core/school_core.dart';
 
 import '../sync/sync_service.dart';
+import 'auth_service.dart';
 
 /// Holds the long-lived objects the whole app shares: the local database and
 /// the sync service.
@@ -16,12 +17,14 @@ class AppScope extends InheritedWidget {
   const AppScope({
     required this.database,
     required this.sync,
+    required this.auth,
     required super.child,
     super.key,
   });
 
   final AppDatabase database;
   final SyncService sync;
+  final AuthService auth;
 
   static AppScope of(BuildContext context) {
     final scope = context.dependOnInheritedWidgetOfExactType<AppScope>();
@@ -32,9 +35,26 @@ class AppScope extends InheritedWidget {
   static AppDatabase databaseOf(BuildContext context) => of(context).database;
   static SyncService syncOf(BuildContext context) => of(context).sync;
 
+  /// Who to record as the author of a write — `marked_by`, `entered_by`,
+  /// `created_by`, `received_by`.
+  ///
+  /// The signed-in principal when there is one. Working offline without an
+  /// account falls back to the seeded principal, because those columns are
+  /// NOT NULL and REFERENCE app_users: there is no "anonymous" option the
+  /// database would accept, and refusing the write instead would mean the
+  /// register cannot be marked at 8am on a morning the internet is down —
+  /// exactly the case this whole system exists for.
+  ///
+  /// The fallback is a real row on the server, so the foreign key holds when
+  /// the change is eventually pushed.
+  static String actorOf(BuildContext context) =>
+      of(context).auth.user?.id ?? DemoSeeder.principalUserId;
+
   @override
   bool updateShouldNotify(AppScope oldWidget) =>
-      database != oldWidget.database || sync != oldWidget.sync;
+      database != oldWidget.database ||
+      sync != oldWidget.sync ||
+      auth != oldWidget.auth;
 }
 
 /// Opens the local SQLite database.

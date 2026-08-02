@@ -22,11 +22,13 @@ class _FacultyAttendanceViewState extends State<FacultyAttendanceView> {
   late final FacultyRepository _repo;
   DateTime _date = dateOnly(DateTime.now());
   bool _busy = false;
+  late String _actor;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     _repo = FacultyRepository(AppScope.databaseOf(context));
+    _actor = AppScope.actorOf(context);
   }
 
   String get _dateKey => encodeDate(_date);
@@ -83,7 +85,7 @@ class _FacultyAttendanceViewState extends State<FacultyAttendanceView> {
                               teacher: teacher,
                               date: _dateKey,
                               status: status,
-                              markedBy: DemoSeeder.principalUserId,
+                              markedBy: _actor,
                               existingId: row?.id,
                               checkInTime: row?.checkInTime,
                               remarks: row?.remarks,
@@ -114,9 +116,7 @@ class _FacultyAttendanceViewState extends State<FacultyAttendanceView> {
         existing: register,
         date: _dateKey,
         status: status,
-        // TODO(auth): the signed-in principal, once the session is threaded
-        //   through. marked_by is NOT NULL REFERENCES app_users(id).
-        markedBy: DemoSeeder.principalUserId,
+        markedBy: _actor,
       );
     } finally {
       if (mounted) setState(() => _busy = false);

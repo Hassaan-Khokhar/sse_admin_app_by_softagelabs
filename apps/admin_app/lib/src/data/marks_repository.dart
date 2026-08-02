@@ -84,6 +84,85 @@ class MarksRepository {
         isPublished: published,
       );
 
+  /// The paper total in use for [examId] + [subjectId].
+  ///
+  /// `subjects.total_marks` is the subject's *default* (usually 100), but a
+  /// class test may be out of 10 or 25. The real total lives on each `marks`
+  /// row, so the first existing row is the source of truth once any mark has
+  /// been entered; before that, the subject default applies.
+  Future<double?> currentPaperTotal({
+    required String examId,
+    required String subjectId,
+  }) async {
+    final row = await (_db.select(_db.marks)
+          ..where((m) =>
+              m.examId.equals(examId) &
+              m.subjectId.equals(subjectId) &
+              m.deletedAt.isNull())
+          ..limit(1))
+        .getSingleOrNull();
+    return row?.totalMarks;
+  }
+
+  /// Changes the paper total and re-grades every mark already entered.
+  ///
+  /// Re-grading is the whole point. If the principal enters marks out of 100
+  /// and then corrects the paper to be out of 10, a mark of 8 must become 80%
+  /// (grade A), not stay at 8% (grade F). Leaving old rows on the old total
+  /// would produce a marksheet where two students with the same score have
+  /// different grades.
+  Future<int> setPaperTotal({
+    required String examId,
+    required String subjectId,
+    required double total,
+    required String enteredBy,
+  }) async {
+    if (total <= 0) {
+      throw ArgumentError.value(total, 'total', 'must be greater than zero');
+    }
+
+    final existing = await (_db.select(_db.marks)
+          ..where((m) =>
+              m.examId.equals(examId) &
+              m.subjectId.equals(subjectId) &
+              m.deletedAt.isNull()))
+        .get();
+
+    for (final mark in existing) {
+      if (mark.totalMarks == total) continue;
+
+      await _writer.upsert(
+        table: _db.marks,
+        rowId: mark.id,
+        conflictTarget: [
+          _db.marks.examId,
+          _db.marks.studentId,
+          _db.marks.subjectId,
+        ],
+        row: MarksCompanion.insert(
+          id: mark.id,
+          schoolId: mark.schoolId,
+          examId: mark.examId,
+          studentId: mark.studentId,
+          subjectId: mark.subjectId,
+          classId: mark.classId,
+          obtainedMarks: Value(mark.obtainedMarks),
+          totalMarks: Value(total),
+          isAbsent: Value(mark.isAbsent),
+          grade: Value(gradeForMarks(
+            obtained: mark.obtainedMarks,
+            total: total,
+            isAbsent: mark.isAbsent,
+          )),
+          enteredBy: Value(enteredBy),
+          updatedAt: nowTimestamp(),
+        ),
+      );
+    }
+
+    return existing.length;
+  }
+
   /// Records one student's mark for one subject.
   ///
   /// Idempotent on `(exam_id, student_id, subject_id)` — re-entering a mark

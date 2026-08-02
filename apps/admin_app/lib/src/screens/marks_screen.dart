@@ -20,6 +20,14 @@ class _MarksScreenState extends State<MarksScreen> {
   Exam? _exam;
   String? _classId;
   Subject? _subject;
+  late String _actor;
+
+  /// Paper total for the selected exam + subject.
+  ///
+  /// Null until loaded. `subjects.total_marks` is only the default — a class
+  /// test out of 10 is not a subject-level property, it belongs to this
+  /// particular paper.
+  double? _paperTotal;
 
   @override
   void didChangeDependencies() {
@@ -27,6 +35,7 @@ class _MarksScreenState extends State<MarksScreen> {
     final db = AppScope.databaseOf(context);
     _repo = MarksRepository(db);
     _roster = AttendanceRepository(db);
+    _actor = AppScope.actorOf(context);
   }
 
   @override
@@ -126,6 +135,14 @@ class _MarksScreenState extends State<MarksScreen> {
                         ),
                         const SizedBox(width: 16),
                         Expanded(child: _subjectPicker(classId)),
+                        const SizedBox(width: 16),
+                        _PaperTotalField(
+                          key: ValueKey('${exam.id}/${_subject?.id}'),
+                          initial: _paperTotal ??
+                              _subject?.totalMarks.toDouble() ??
+                              100,
+                          onChanged: (total) => _applyPaperTotal(exam, total),
+                        ),
                       ],
                     ),
                   ),
@@ -150,7 +167,12 @@ class _MarksScreenState extends State<MarksScreen> {
                 subjects.any((s) => s.id == _subject!.id)
             ? _subject!
             : subjects.first;
-        _subject = current;
+        if (_subject?.id != current.id) {
+          _subject = current;
+          _loadPaperTotal(current);
+        } else {
+          _subject = current;
+        }
 
         return Wrap(
           spacing: 8,
@@ -177,6 +199,8 @@ class _MarksScreenState extends State<MarksScreen> {
       );
     }
 
+    final total = _paperTotal ?? subject.totalMarks.toDouble();
+
     return StreamBuilder<List<Student>>(
       stream: _roster.watchRoster(classId),
       builder: (context, rosterSnapshot) {
@@ -200,22 +224,47 @@ class _MarksScreenState extends State<MarksScreen> {
               itemBuilder: (context, i) => _MarkRow(
                 student: roster[i],
                 mark: marks[roster[i].id],
-                totalMarks: subject.totalMarks.toDouble(),
+                totalMarks: total,
                 onSubmit: (value, absent) => _repo.saveMark(
                   student: roster[i],
                   exam: exam,
                   subject: subject,
                   obtained: value,
-                  total: subject.totalMarks.toDouble(),
+                  total: total,
                   isAbsent: absent,
                   existingId: marks[roster[i].id]?.id,
-                  enteredBy: DemoSeeder.principalUserId,
+                  enteredBy: _actor,
                 ),
               ),
             );
           },
         );
       },
+    );
+  }
+
+  Future<void> _loadPaperTotal(Subject subject) async {
+    final exam = _exam;
+    if (exam == null) return;
+    final stored = await _repo.currentPaperTotal(
+      examId: exam.id,
+      subjectId: subject.id,
+    );
+    if (!mounted) return;
+    setState(() => _paperTotal = stored ?? subject.totalMarks.toDouble());
+  }
+
+  Future<void> _applyPaperTotal(Exam exam, double total) async {
+    final subject = _subject;
+    if (subject == null || total <= 0) return;
+    setState(() => _paperTotal = total);
+    // Re-grades anything already entered, so a correction to the paper total
+    // does not leave half the class graded against the old denominator.
+    await _repo.setPaperTotal(
+      examId: exam.id,
+      subjectId: subject.id,
+      total: total,
+      enteredBy: _actor,
     );
   }
 
@@ -341,6 +390,84 @@ class _ExamBar extends StatelessWidget {
             label: Text(selected.isPublished ? 'Unpublish' : 'Publish results'),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// "Out of N" for this paper.
+///
+/// Separate from the subject's default because a class test is out of 10 or 25
+/// while the subject is nominally out of 100. Committing on blur or Enter
+/// rather than per keystroke — otherwise typing "25" would briefly re-grade the
+/// whole class against a total of 2.
+class _PaperTotalField extends StatefulWidget {
+  const _PaperTotalField({
+    required this.initial,
+    required this.onChanged,
+    super.key,
+  });
+
+  final double initial;
+  final ValueChanged<double> onChanged;
+
+  @override
+  State<_PaperTotalField> createState() => _PaperTotalFieldState();
+}
+
+class _PaperTotalFieldState extends State<_PaperTotalField> {
+  late final TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller =
+        TextEditingController(text: widget.initial.toStringAsFixed(0));
+  }
+
+  @override
+  void didUpdateWidget(_PaperTotalField old) {
+    super.didUpdateWidget(old);
+    if (widget.initial != old.initial) {
+      _controller.text = widget.initial.toStringAsFixed(0);
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _commit() {
+    final value = double.tryParse(_controller.text.trim());
+    if (value == null || value <= 0) {
+      _controller.text = widget.initial.toStringAsFixed(0);
+      return;
+    }
+    if (value != widget.initial) widget.onChanged(value);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 150,
+      child: Focus(
+        onFocusChange: (has) {
+          if (!has) _commit();
+        },
+        child: TextField(
+          controller: _controller,
+          keyboardType: TextInputType.number,
+          textAlign: TextAlign.right,
+          onSubmitted: (_) => _commit(),
+          decoration: const InputDecoration(
+            isDense: true,
+            labelText: 'Paper total',
+            prefixText: 'out of ',
+            border: OutlineInputBorder(),
+          ),
+        ),
       ),
     );
   }

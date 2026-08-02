@@ -15,11 +15,13 @@ class NoticesScreen extends StatefulWidget {
 
 class _NoticesScreenState extends State<NoticesScreen> {
   late final SchoolRepository _repo;
+  late String _actor;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     _repo = SchoolRepository(AppScope.databaseOf(context));
+    _actor = AppScope.actorOf(context);
   }
 
   @override
@@ -202,7 +204,7 @@ class _NoticesScreenState extends State<NoticesScreen> {
         title: title.text.trim(),
         body: body.text.trim(),
         priority: priority,
-        createdBy: DemoSeeder.principalUserId,
+        createdBy: _actor,
       );
     }
     title.dispose();

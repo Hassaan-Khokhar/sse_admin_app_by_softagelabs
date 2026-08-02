@@ -83,6 +83,7 @@ class DemoSeeder {
 
       await _seedAttendance(now);
       await _seedTeacherAttendance(now);
+      await _seedFees(now);
     });
   }
 
@@ -127,6 +128,106 @@ class DemoSeeder {
             updatedAt: now,
           ),
         );
+  }
+
+  /// Fee structures per class, plus two months of challans.
+  ///
+  /// Without this the Fees screen has nothing to bill and generation silently
+  /// produces zero challans. CLAUDE.md §12 also calls for realistic PKR
+  /// amounts on screen before filming.
+  ///
+  /// Roughly a third are left unpaid so the defaulter list has something in
+  /// it — a defaulter screen with nobody on it demonstrates nothing, and the
+  /// arrears carry-forward has nothing to carry.
+  Future<void> _seedFees(String now) async {
+    final classes = await _db.select(_db.classes).get();
+
+    // Senior classes cost more, which is how Pakistani schools actually price.
+    for (final schoolClass in classes) {
+      final tuition = 3500 + (schoolClass.grade * 250);
+      await _db.into(_db.feeStructures).insertOnConflictUpdate(
+            FeeStructuresCompanion.insert(
+              id: demoId('fee-structure/${schoolClass.id}'),
+              schoolId: schoolId,
+              academicYearId: academicYearId,
+              classId: Value(schoolClass.id),
+              tuitionFee: Value(tuition.toDouble()),
+              examFee: const Value(500),
+              otherFee: const Value(300),
+              otherLabel: const Value('Sports & library'),
+              updatedAt: now,
+            ),
+          );
+    }
+
+    final structures = {
+      for (final s in await _db.select(_db.feeStructures).get())
+        if (s.classId != null) s.classId!: s,
+    };
+
+    final students = await (_db.select(_db.students)
+          ..where((s) => s.status.equals(StudentStatus.active.wire)))
+        .get();
+
+    final today = dateOnly(DateTime.now());
+
+    // Last month and this month.
+    for (var monthsAgo = 1; monthsAgo >= 0; monthsAgo--) {
+      final period = DateTime(today.year, today.month - monthsAgo);
+
+      for (final student in students) {
+        final structure = structures[student.classId];
+        if (structure == null) continue;
+
+        final base = structure.tuitionFee +
+            structure.admissionFee +
+            structure.examFee +
+            structure.otherFee;
+
+        // Last month's unpaid balance becomes this month's arrears — the
+        // behaviour that makes the books balance from month two (CLAUDE.md §8).
+        final roll = _random.nextInt(100);
+        final paidLastMonth = monthsAgo == 1 && roll >= 30;
+        final arrears =
+            (monthsAgo == 0 && !paidLastMonth && roll < 30) ? base : 0.0;
+
+        final total = base + arrears;
+        final isPaid = monthsAgo == 1 ? paidLastMonth : roll >= 65;
+        final serial = student.admissionNo.split('-').last;
+        final monthKey = period.month.toString().padLeft(2, '0');
+
+        await _db.into(_db.feeChallans).insertOnConflictUpdate(
+              FeeChallansCompanion.insert(
+                id: demoId('challan/${student.id}/${period.year}-$monthKey'),
+                schoolId: schoolId,
+                studentId: student.id,
+                classId: student.classId!,
+                challanNo: 'CH-${period.year}-$monthKey-$serial',
+                month: period.month,
+                year: period.year,
+                tuitionFee: Value(structure.tuitionFee),
+                admissionFee: Value(structure.admissionFee),
+                examFee: Value(structure.examFee),
+                otherFee: Value(structure.otherFee),
+                arrears: Value(arrears),
+                totalAmount: total,
+                issueDate: encodeDate(DateTime(period.year, period.month, 1)),
+                dueDate: encodeDate(DateTime(period.year, period.month, 10)),
+                status: Value(isPaid
+                    ? ChallanStatus.paid.wire
+                    : ChallanStatus.unpaid.wire),
+                paidAmount: Value(isPaid ? total : 0),
+                paidDate: Value(isPaid
+                    ? encodeDate(DateTime(period.year, period.month, 8))
+                    : null),
+                paymentMethod:
+                    Value(isPaid ? PaymentMethod.cash.wire : null),
+                receivedBy: Value(isPaid ? principalUserId : null),
+                updatedAt: now,
+              ),
+            );
+      }
+    }
   }
 
   Future<void> _seedTeachers(String now) async {

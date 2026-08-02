@@ -4,8 +4,10 @@ import 'package:school_core/school_core.dart';
 import 'data/app_scope.dart';
 import 'data/auth_service.dart';
 import 'sync/sync_service.dart';
+import 'screens/assignments_screen.dart';
 import 'screens/attendance_screen.dart';
 import 'screens/classes_screen.dart';
+import 'screens/timetable_screen.dart';
 import 'screens/dashboard_screen.dart';
 import 'screens/lost_found_screen.dart';
 import 'screens/notices_screen.dart';
@@ -50,6 +52,7 @@ class _AdminAppState extends State<AdminApp> {
     return AppScope(
       database: widget.database,
       sync: widget.sync,
+      auth: _auth,
       child: MaterialApp(
         title: 'SSE School — Admin',
         debugShowCheckedModeBanner: false,
@@ -87,6 +90,8 @@ enum AdminSection {
   attendance('Attendance', Icons.fact_check_outlined),
   marks('Marks', Icons.school_outlined),
   fees('Fees', Icons.receipt_long_outlined),
+  timetable('Timetable', Icons.schedule_outlined),
+  assignments('Assignments', Icons.assignment_outlined),
   notices('Notices', Icons.campaign_outlined),
   lostFound('Lost & Found', Icons.search_outlined);
 
@@ -193,6 +198,8 @@ class _AdminShellState extends State<AdminShell> {
         AdminSection.fees => const FeesScreen(),
         AdminSection.marks => const MarksScreen(),
         AdminSection.classes => const ClassesScreen(),
+        AdminSection.timetable => const TimetableScreen(),
+        AdminSection.assignments => const AssignmentsScreen(),
         AdminSection.notices => const NoticesScreen(),
         AdminSection.lostFound => const LostFoundScreen(),
       };

@@ -79,10 +79,15 @@ class _AttendanceScreenState extends State<StudentAttendanceView> {
   DateTime _date = dateOnly(DateTime.now());
   bool _bulkRunning = false;
 
+  /// Captured here rather than read inside async callbacks — reading context
+  /// after an await is a lint and a lifecycle hazard.
+  late String _actor;
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     _repo = AttendanceRepository(AppScope.databaseOf(context));
+    _actor = AppScope.actorOf(context);
   }
 
   String get _dateKey => encodeDate(_date);
@@ -174,7 +179,7 @@ class _AttendanceScreenState extends State<StudentAttendanceView> {
                           student: student,
                           date: _dateKey,
                           status: status,
-                          markedBy: DemoSeeder.principalUserId,
+                          markedBy: _actor,
                           existingId: row?.id,
                         ),
                       );
@@ -201,10 +206,7 @@ class _AttendanceScreenState extends State<StudentAttendanceView> {
         existing: register,
         date: _dateKey,
         status: status,
-        // TODO(auth): the signed-in principal, once login exists. Until then
-        //   the seeded principal stands in — `marked_by` is NOT NULL and
-        //   references app_users, so it cannot simply be left blank.
-        markedBy: DemoSeeder.principalUserId,
+        markedBy: _actor,
       );
     } finally {
       if (mounted) setState(() => _bulkRunning = false);

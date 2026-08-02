@@ -62,6 +62,7 @@ class _ChallansTabState extends State<_ChallansTab> {
   late int _year;
   bool _busy = false;
   String? _message;
+  late String _actor;
 
   @override
   void initState() {
@@ -75,6 +76,7 @@ class _ChallansTabState extends State<_ChallansTab> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     _repo = FeeRepository(AppScope.databaseOf(context));
+    _actor = AppScope.actorOf(context);
   }
 
   @override
@@ -169,6 +171,9 @@ class _ChallansTabState extends State<_ChallansTab> {
         setState(() => _message =
             '$count challans in ${watch.elapsedMilliseconds} ms');
       }
+    } on FeeGenerationException catch (error) {
+      // Already phrased for a human — show it as-is.
+      if (mounted) setState(() => _message = error.message);
     } on Object catch (error) {
       if (mounted) setState(() => _message = 'Failed: $error');
     } finally {
@@ -236,7 +241,7 @@ class _ChallansTabState extends State<_ChallansTab> {
           challan: challan,
           amount: amount,
           method: method,
-          receivedBy: DemoSeeder.principalUserId,
+          receivedBy: _actor,
         );
       }
     }

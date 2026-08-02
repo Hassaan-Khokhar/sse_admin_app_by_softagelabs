@@ -1,6 +1,18 @@
 import 'package:drift/drift.dart';
 import 'package:school_core/school_core.dart';
 
+/// Why bulk generation could not produce any challans.
+///
+/// Carries a sentence the principal can act on, not a stack trace.
+class FeeGenerationException implements Exception {
+  const FeeGenerationException(this.message);
+
+  final String message;
+
+  @override
+  String toString() => message;
+}
+
 /// Fee structures, bulk challan generation, payments and defaulters.
 class FeeRepository {
   FeeRepository(this._db) : _writer = OutboxWriter(_db);
@@ -76,6 +88,11 @@ class FeeRepository {
   /// click again.
   ///
   /// Returns how many challans were written.
+  ///
+  /// Throws [FeeGenerationException] rather than quietly returning 0 when
+  /// there is nothing to bill. Silently producing no challans is the worst
+  /// outcome: the principal clicks, sees nothing happen, and has no idea
+  /// whether the feature is broken or they missed a step.
   Future<int> generateForMonth({
     required int month,
     required int year,
@@ -87,11 +104,23 @@ class FeeRepository {
               s.status.equals(StudentStatus.active.wire)))
         .get();
 
-    if (students.isEmpty) return 0;
+    if (students.isEmpty) {
+      throw const FeeGenerationException(
+        'No active students to bill. Enrol students first, or seed the demo '
+        'data from the Dashboard.',
+      );
+    }
 
     final structures = await (_db.select(_db.feeStructures)
           ..where((f) => f.deletedAt.isNull()))
         .get();
+
+    if (structures.isEmpty) {
+      throw const FeeGenerationException(
+        'No fee structure set. Add one on the "Fee structure" tab — challan '
+        'generation has no amounts to bill without it.',
+      );
+    }
 
     // A structure with a null class_id applies school-wide; a class-specific
     // one overrides it.
@@ -104,10 +133,23 @@ class FeeRepository {
     final issueDate = encodeDate(DateTime.now());
     final due = encodeDate(dueDate);
     var written = 0;
+    var skippedNoStructure = 0;
+    var skippedNoClass = 0;
 
     for (final student in students) {
+      // A student not yet placed in a class cannot be billed — there is no
+      // class to look a fee structure up by, and class_id is NOT NULL on the
+      // challan.
+      if (student.classId == null) {
+        skippedNoClass++;
+        continue;
+      }
+
       final structure = byClass[student.classId] ?? schoolWide;
-      if (structure == null) continue; // no fee set for this class yet
+      if (structure == null) {
+        skippedNoStructure++;
+        continue;
+      }
 
       final arrears = await _outstandingBefore(
         studentId: student.id,
@@ -164,6 +206,20 @@ class FeeRepository {
         ),
       );
       written++;
+    }
+
+    if (written == 0) {
+      throw FeeGenerationException(
+        skippedNoStructure > 0
+            ? 'No challans generated — $skippedNoStructure students are in '
+                'classes with no fee structure. Add a school-wide structure, '
+                'or one per class.'
+            : skippedNoClass > 0
+                ? 'No challans generated — $skippedNoClass students are not '
+                    'assigned to a class yet.'
+                : 'No challans generated. Every student already has a paid '
+                    'challan for this month.',
+      );
     }
 
     return written;

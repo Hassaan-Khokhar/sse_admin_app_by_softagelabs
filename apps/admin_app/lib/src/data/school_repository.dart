@@ -113,6 +113,117 @@ class SchoolRepository {
   Future<void> deleteSubject(String id) =>
       _writer.tombstone(table: _db.subjects, rowId: id);
 
+  // ── timetable ─────────────────────────────────────────────────────────────
+  //  The timetable belongs to the CLASS, not the student — 40 students share
+  //  one, which is 40× less data than the university per-student model
+  //  (CLAUDE.md §11).
+
+  Stream<List<TimetableSlot>> watchTimetable(String classId) {
+    final query = _db.select(_db.timetableSlots)
+      ..where((t) => t.classId.equals(classId) & t.deletedAt.isNull())
+      ..orderBy([
+        (t) => OrderingTerm.asc(t.dayOfWeek),
+        (t) => OrderingTerm.asc(t.periodNo),
+      ]);
+    return query.watch();
+  }
+
+  Stream<List<Teacher>> watchTeachers() {
+    final query = _db.select(_db.teachers)
+      ..where((t) => t.deletedAt.isNull() & t.isActive.equals(true))
+      ..orderBy([(t) => OrderingTerm.asc(t.fullName)]);
+    return query.watch();
+  }
+
+  Future<void> saveSlot({
+    required String schoolId,
+    required String classId,
+    String? id,
+    String? subjectId,
+    String? teacherId,
+    required int dayOfWeek,
+    required int periodNo,
+    required String startTime,
+    required String endTime,
+    String slotType = 'class',
+  }) async {
+    final rowId = id ?? newId();
+    await _writer.upsert(
+      table: _db.timetableSlots,
+      rowId: rowId,
+      // UNIQUE(class_id, day_of_week, period_no) — editing period 3 on Monday
+      // replaces it rather than stacking a second lesson in the same slot.
+      conflictTarget: [
+        _db.timetableSlots.classId,
+        _db.timetableSlots.dayOfWeek,
+        _db.timetableSlots.periodNo,
+      ],
+      row: TimetableSlotsCompanion.insert(
+        id: rowId,
+        schoolId: schoolId,
+        classId: classId,
+        subjectId: Value(subjectId),
+        teacherId: Value(teacherId),
+        dayOfWeek: dayOfWeek,
+        periodNo: periodNo,
+        startTime: startTime,
+        endTime: endTime,
+        slotType: Value(slotType),
+        updatedAt: nowTimestamp(),
+      ),
+    );
+  }
+
+  Future<void> deleteSlot(String id) =>
+      _writer.tombstone(table: _db.timetableSlots, rowId: id);
+
+  // ── assignments ───────────────────────────────────────────────────────────
+  //  View only on the student side — students do not submit through the app
+  //  in v1 (CLAUDE.md §9).
+
+  Stream<List<Assignment>> watchAssignments({String? classId}) {
+    final query = _db.select(_db.assignments)
+      ..where((a) {
+        var predicate = a.deletedAt.isNull();
+        if (classId != null) predicate = predicate & a.classId.equals(classId);
+        return predicate;
+      })
+      ..orderBy([(a) => OrderingTerm.desc(a.assignedDate)]);
+    return query.watch();
+  }
+
+  Future<void> saveAssignment({
+    required String schoolId,
+    required String classId,
+    String? id,
+    String? subjectId,
+    required String title,
+    String? description,
+    String? dueDate,
+    required String createdBy,
+  }) async {
+    final rowId = id ?? newId();
+    await _writer.upsert(
+      table: _db.assignments,
+      rowId: rowId,
+      row: AssignmentsCompanion.insert(
+        id: rowId,
+        schoolId: schoolId,
+        classId: classId,
+        subjectId: Value(subjectId),
+        title: title,
+        description: Value(description),
+        assignedDate: encodeDate(DateTime.now()),
+        dueDate: Value(dueDate),
+        createdBy: Value(createdBy),
+        updatedAt: nowTimestamp(),
+      ),
+    );
+  }
+
+  Future<void> deleteAssignment(String id) =>
+      _writer.tombstone(table: _db.assignments, rowId: id);
+
   // ── notices ───────────────────────────────────────────────────────────────
 
   Stream<List<Notice>> watchNotices() {

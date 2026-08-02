@@ -25,11 +25,13 @@ class LostFoundScreen extends StatefulWidget {
 class _LostFoundScreenState extends State<LostFoundScreen> {
   late final SchoolRepository _repo;
   bool _flaggedOnly = false;
+  late String _actor;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     _repo = SchoolRepository(AppScope.databaseOf(context));
+    _actor = AppScope.actorOf(context);
   }
 
   @override
@@ -84,7 +86,7 @@ class _LostFoundScreenState extends State<LostFoundScreen> {
                   onModerate: (state) => _repo.moderate(
                     item: items[i],
                     state: state,
-                    moderatedBy: DemoSeeder.principalUserId,
+                    moderatedBy: _actor,
                   ),
                 ),
               );
