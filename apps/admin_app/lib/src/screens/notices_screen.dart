@@ -4,6 +4,7 @@ import 'package:school_core/school_core.dart';
 import '../data/app_scope.dart';
 import '../data/school_repository.dart';
 import '../widgets/empty_state.dart';
+import '../widgets/page_shell.dart';
 
 /// Notice board. A notice with no class goes to the whole school.
 class NoticesScreen extends StatefulWidget {
@@ -28,26 +29,17 @@ class _NoticesScreenState extends State<NoticesScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(24, 20, 24, 12),
-          child: Row(
-            children: [
-              Text('Notices', style: theme.textTheme.headlineSmall),
-              const Spacer(),
-              FilledButton.icon(
-                onPressed: _compose,
-                icon: const Icon(Icons.campaign_outlined, size: 18),
-                label: const Text('Post notice'),
-              ),
-            ],
-          ),
+    return PageShell(
+      title: 'Notices',
+      subtitle: 'Posted here, on every phone at the next sync.',
+      actions: [
+        FilledButton.icon(
+          onPressed: _compose,
+          icon: const Icon(Icons.campaign_rounded, size: 17),
+          label: const Text('Post notice'),
         ),
-        const Divider(height: 1),
-        Expanded(
-          child: StreamBuilder<List<Notice>>(
+      ],
+      child: StreamBuilder<List<Notice>>(
             stream: _repo.watchNotices(),
             builder: (context, snapshot) {
               final notices = snapshot.data ?? const [];
@@ -100,9 +92,7 @@ class _NoticesScreenState extends State<NoticesScreen> {
                 },
               );
             },
-          ),
-        ),
-      ],
+      ),
     );
   }
 

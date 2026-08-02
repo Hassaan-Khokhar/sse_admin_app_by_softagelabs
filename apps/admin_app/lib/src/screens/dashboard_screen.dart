@@ -106,57 +106,59 @@ class _MetricRow extends StatelessWidget {
 
   final AppDatabase db;
 
+  /// Fixed, not stretched to fill the row.
+  ///
+  /// Dividing the available width between five cards makes each one enormous
+  /// on a wide monitor — a two-digit number floating in 450px of white, which
+  /// reads as unfinished rather than spacious. A tile sized to its content
+  /// stays legible at any window width and simply wraps.
+  static const _cardWidth = 208.0;
+
   @override
   Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        // Five across on a wide window, wrapping to two rows on a laptop.
-        final columns = constraints.maxWidth > 1180 ? 5 : 3;
-        final width =
-            (constraints.maxWidth - (columns - 1) * 16) / columns;
-
-        return Wrap(
-          spacing: 16,
-          runSpacing: 16,
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Wrap(
+          spacing: 14,
+          runSpacing: 14,
           children: [
             _Metric(
-              width: width,
+              width: _cardWidth,
               label: 'Students',
-              icon: Icons.people_outline,
+              icon: Icons.groups_rounded,
               accent: AppTheme.accentBlue,
               stream: _liveCount(db, db.students),
             ),
             _Metric(
-              width: width,
+              width: _cardWidth,
               label: 'Classes',
-              icon: Icons.meeting_room_outlined,
+              icon: Icons.meeting_room_rounded,
               accent: AppTheme.accentAmber,
               stream: _liveCount(db, db.classes),
             ),
             _Metric(
-              width: width,
+              width: _cardWidth,
               label: 'Faculty',
-              icon: Icons.badge_outlined,
+              icon: Icons.badge_rounded,
               accent: AppTheme.accentGreen,
               stream: _liveCount(db, db.teachers),
             ),
             _Metric(
-              width: width,
+              width: _cardWidth,
               label: 'Subjects',
-              icon: Icons.menu_book_outlined,
+              icon: Icons.menu_book_rounded,
               accent: AppTheme.accentPink,
               stream: _liveCount(db, db.subjects),
             ),
             _Metric(
-              width: width,
+              width: _cardWidth,
               label: 'Unpaid challans',
-              icon: Icons.receipt_long_outlined,
+              icon: Icons.payments_rounded,
               accent: AppTheme.accentOrange,
               stream: _unpaidChallans(db),
             ),
           ],
-        );
-      },
+        ),
     );
   }
 }

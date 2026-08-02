@@ -6,6 +6,7 @@ import 'package:school_core/school_core.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' show PostgrestException;
 
 import '../data/supabase_bootstrap.dart';
+import 'backfill.dart';
 import 'sync_engine.dart';
 import 'sync_status.dart';
 
@@ -152,21 +153,39 @@ class SyncService {
     final engine = SyncEngine(_db);
 
     try {
-      // Drain in batches until empty. Bulk challan generation puts one row per
-      // student in the outbox — 800 at a real school — and pushing those as a
-      // single request over this connection would never complete.
-      var guard = 0;
-      while (await engine.hasPending()) {
-        await engine.push();
-        if (++guard > 100) {
-          throw StateError('Outbox did not drain after 100 batches');
-        }
+      var result = await _drain(engine);
+
+      // Self-heal. A foreign key violation means the server is missing a row
+      // this one points at — typically because it was cleared while this PC
+      // kept its copy. Enqueueing everything in dependency order uploads the
+      // parents first and the blocked rows then go through.
+      //
+      // Done automatically because the alternative is what the user actually
+      // experienced: sync failing on every attempt until someone remembers to
+      // press a button in a developer menu. That is not a workflow.
+      if (result.hasMissingParents && !_healedThisSession) {
+        _healedThisSession = true;
+        _emit(_status.copyWith(
+          phase: SyncPhase.syncing,
+          lastError: 'Server is missing related records — re-uploading…',
+        ));
+        await SyncBackfill(_db).enqueueEverything();
+        result = await _drain(engine);
       }
 
       await engine.pull(since: await _readCursor());
 
+      if (!result.isClean) {
+        // Some rows are genuinely stuck. They stay queued and keep retrying;
+        // saying so is better than a green tick over an outbox that is not
+        // actually empty.
+        _fail(_readable(result.failures.first.error));
+        return;
+      }
+
       final now = DateTime.now();
       await _writeCursor(encodeTimestamp(now));
+      _healedThisSession = false;
       _emit(SyncStatus(
         phase: SyncPhase.idle,
         pendingCount: 0,
@@ -181,6 +200,32 @@ class SyncService {
       // rejected your data", which is a bug someone needs to see.
       _fail(_readable(error));
     }
+  }
+
+  /// Guards against re-uploading the whole school on every tick if the
+  /// backfill does not actually resolve the problem.
+  bool _healedThisSession = false;
+
+  /// Pushes batches until the outbox stops shrinking.
+  ///
+  /// Bulk challan generation queues one row per student — 800 at a real
+  /// school — so this has to loop. The exit condition is *progress*, not an
+  /// empty outbox: rows that fail permanently would otherwise spin here
+  /// forever, since they are still pending after every pass.
+  Future<PushResult> _drain(SyncEngine engine) async {
+    var confirmed = 0;
+    final failures = <PushFailure>[];
+
+    for (var pass = 0; pass < 200; pass++) {
+      if (!await engine.hasPending()) break;
+      final result = await engine.push();
+      confirmed += result.confirmed;
+      failures.addAll(result.failures);
+      // Nothing moved — everything left is blocked, so stop rather than loop.
+      if (result.confirmed == 0) break;
+    }
+
+    return PushResult(confirmed: confirmed, failures: failures);
   }
 
   /// Turns transport noise into something a principal can act on.

@@ -52,19 +52,28 @@ class SyncEngine {
     'item_claims',
   ];
 
-  /// Drains the outbox to Supabase.
+  /// Drains one batch of the outbox to Supabase.
   ///
-  /// Returns the number of operations confirmed. Rows are only removed from
-  /// the outbox once the server has accepted them — a dropped connection
-  /// leaves them queued for the next attempt, which is the entire reason the
-  /// outbox exists.
-  Future<int> push() async {
+  /// Rows are removed only once the server has accepted them — a dropped
+  /// connection leaves them queued, which is the entire reason the outbox
+  /// exists.
+  ///
+  /// **A failing table does not stop the others.** An earlier version aborted
+  /// the whole push on the first error, which meant one unpushable row — an
+  /// attendance record whose student was deleted server-side, say — failed on
+  /// every attempt and permanently blocked everything queued behind it. Sync
+  /// then appeared broken forever, and the only cure was clearing the outbox
+  /// by hand.
+  ///
+  /// Now each table is attempted independently, failures are recorded on the
+  /// offending rows, and the rest of the batch still goes.
+  Future<PushResult> push() async {
     final pending = await (_db.select(_db.outbox)
           ..orderBy([(o) => OrderingTerm.asc(o.seq)])
           ..limit(syncPushBatchSize))
         .get();
 
-    if (pending.isEmpty) return 0;
+    if (pending.isEmpty) return const PushResult(confirmed: 0, failures: []);
 
     // Group by table so each table becomes one request rather than one per
     // row. Marking 40 students is then a single upsert, not 40 round trips
@@ -81,39 +90,74 @@ class SyncEngine {
     }
 
     var confirmed = 0;
+    final failures = <PushFailure>[];
     final client = SupabaseBootstrap.client;
 
     for (final table in pushOrder) {
       final ops = byTable[table];
       if (ops == null || ops.isEmpty) continue;
 
-      // Upsert is idempotent on the primary key, so a retry after a lost
-      // response is harmless — it rewrites the same row with the same values.
-      // That is what stands in for the `sync_ops` ledger in the prototype.
-      await client.from(table).upsert(
-            ops.map((op) => op.payload).toList(),
-            onConflict: 'id',
-          );
+      try {
+        // Upsert is idempotent on the primary key, so a retry after a lost
+        // response is harmless — it rewrites the same row with the same
+        // values. That stands in for the `sync_ops` ledger in the prototype.
+        await client.from(table).upsert(
+              ops.map((op) => op.payload).toList(),
+              onConflict: 'id',
+            );
 
-      await (_db.delete(_db.outbox)
-            ..where((o) => o.seq.isIn(ops.map((op) => op.seq))))
-          .go();
+        await (_db.delete(_db.outbox)
+              ..where((o) => o.seq.isIn(ops.map((op) => op.seq))))
+            .go();
 
-      confirmed += ops.length;
+        confirmed += ops.length;
+      } on Object catch (error) {
+        await _recordFailure(ops, error);
+        failures.add(PushFailure(table: table, error: error));
+        // Deliberately no rethrow — the next table may be perfectly fine.
+      }
     }
 
-    // Anything left is queued for a table missing from pushOrder — a schema
-    // change that nobody added here. Surface it rather than silently looping
-    // forever on rows that can never drain.
-    final unknown = byTable.keys.where((t) => !pushOrder.contains(t)).toList();
-    if (unknown.isNotEmpty) {
-      throw StateError(
-        'Outbox holds rows for unknown tables: ${unknown.join(', ')}. '
-        'Add them to SyncEngine.pushOrder in dependency order.',
+    // Rows queued for a table missing from pushOrder can never drain. Record
+    // them so they surface instead of looping silently.
+    final unknown = byTable.keys.where((t) => !pushOrder.contains(t));
+    for (final table in unknown) {
+      final error = StateError(
+        'No push order for table "$table". Add it to SyncEngine.pushOrder in '
+        'dependency order.',
       );
+      await _recordFailure(byTable[table]!, error);
+      failures.add(PushFailure(table: table, error: error));
     }
 
-    return confirmed;
+    return PushResult(confirmed: confirmed, failures: failures);
+  }
+
+  /// Stamps the attempt count and the reason onto rows that would not push.
+  ///
+  /// The rows stay queued — nothing is ever dropped. `attempts` is what lets
+  /// the UI eventually say "this one is stuck" rather than reporting "pending"
+  /// forever about a row that will never succeed.
+  Future<void> _recordFailure(List<_PendingOp> ops, Object error) async {
+    final message = error.toString();
+    await (_db.update(_db.outbox)
+          ..where((o) => o.seq.isIn(ops.map((op) => op.seq))))
+        .write(
+      OutboxCompanion(
+        lastError: Value(message.length > 500
+            ? '${message.substring(0, 500)}…'
+            : message),
+      ),
+    );
+
+    // Increment rather than overwrite: a raw SQL bump avoids reading every
+    // row back just to add one.
+    await _db.customUpdate(
+      'UPDATE outbox SET attempts = attempts + 1 WHERE seq IN '
+      '(${ops.map((_) => '?').join(', ')})',
+      variables: [for (final op in ops) Variable(op.seq)],
+      updates: {_db.outbox},
+    );
   }
 
   /// True while the outbox still holds work, so the caller can loop.
@@ -183,6 +227,35 @@ class SyncEngine {
         final Map<String, Object?> map => jsonEncode(map),
         _ => value,
       };
+}
+
+/// Outcome of one push batch.
+class PushResult {
+  const PushResult({required this.confirmed, required this.failures});
+
+  /// Rows the server accepted and that have left the outbox.
+  final int confirmed;
+
+  final List<PushFailure> failures;
+
+  bool get isClean => failures.isEmpty;
+
+  /// True when something failed because the server lacks a row this one
+  /// points at — the signal that a backfill would fix it.
+  ///
+  /// Postgres 23503 is `foreign_key_violation`.
+  bool get hasMissingParents => failures.any((f) {
+        final text = f.error.toString();
+        return text.contains('foreign key constraint') ||
+            text.contains('23503');
+      });
+}
+
+class PushFailure {
+  const PushFailure({required this.table, required this.error});
+
+  final String table;
+  final Object error;
 }
 
 class _PendingOp {

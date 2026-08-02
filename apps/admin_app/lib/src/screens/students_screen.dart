@@ -4,6 +4,7 @@ import 'package:school_core/school_core.dart';
 import '../data/app_scope.dart';
 import '../data/student_repository.dart';
 import '../widgets/empty_state.dart';
+import '../widgets/page_shell.dart';
 import '../widgets/student_form.dart';
 
 /// The roll — enrol, edit, withdraw.
@@ -41,88 +42,95 @@ class _StudentsScreenState extends State<StudentsScreen> {
       builder: (context, classSnapshot) {
         final classes = classSnapshot.data ?? const [];
 
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(24, 20, 24, 12),
-              child: Row(
+        return PageShell(
+          title: 'Students',
+          subtitle: 'Enrol, edit and withdraw. Records are kept forever.',
+          actions: [
+            FilledButton.icon(
+              onPressed: classes.isEmpty ? null : () => _openForm(classes),
+              icon: const Icon(Icons.person_add_alt_1_rounded, size: 17),
+              label: const Text('Enrol student'),
+            ),
+          ],
+          toolbar: Row(
+            children: [
+              SizedBox(
+                width: 260,
+                child: TextField(
+                  controller: _search,
+                  onChanged: (_) => setState(() {}),
+                  decoration: const InputDecoration(
+                    prefixIcon: Icon(Icons.search_rounded, size: 18),
+                    hintText: 'Name or admission no',
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              DropdownButton<String?>(
+                value: _classId,
+                hint: const Text('All classes'),
+                underline: const SizedBox.shrink(),
+                onChanged: (id) => setState(() => _classId = id),
+                items: [
+                  const DropdownMenuItem(
+                      value: null, child: Text('All classes')),
+                  for (final c in classes)
+                    DropdownMenuItem(
+                        value: c.id, child: Text('Class ${c.displayName}')),
+                ],
+              ),
+              const SizedBox(width: 16),
+              // Withdrawn students are never deleted, so they must stay
+              // findable — a leaving certificate gets requested months later.
+              FilterChip(
+                label: const Text('Include withdrawn'),
+                selected: _includeInactive,
+                onSelected: (v) => setState(() => _includeInactive = v),
+              ),
+            ],
+          ),
+          child: StreamBuilder<List<Student>>(
+            stream: _repo.watchStudents(
+              classId: _classId,
+              search: _search.text,
+              includeInactive: _includeInactive,
+            ),
+            builder: (context, snapshot) {
+              final students = snapshot.data ?? const [];
+              if (students.isEmpty) {
+                return EmptyState(
+                  icon: Icons.groups_rounded,
+                  title: _search.text.isEmpty
+                      ? 'No students'
+                      : 'Nobody matches "${_search.text}"',
+                  detail: _search.text.isEmpty
+                      ? 'Enrol one, or seed the demo data from the Dashboard.'
+                      : 'Try a different name or admission number.',
+                );
+              }
+              return Column(
                 children: [
-                  Text('Students', style: theme.textTheme.headlineSmall),
-                  const SizedBox(width: 24),
-                  SizedBox(
-                    width: 240,
-                    child: TextField(
-                      controller: _search,
-                      onChanged: (_) => setState(() {}),
-                      decoration: const InputDecoration(
-                        isDense: true,
-                        prefixIcon: Icon(Icons.search, size: 18),
-                        hintText: 'Name or admission no',
-                        border: OutlineInputBorder(),
+                  ListSummaryBar(children: [
+                    Text('${students.length} students',
+                        style: theme.textTheme.titleSmall),
+                  ]),
+                  Expanded(
+                    child: ListView.separated(
+                      itemCount: students.length,
+                      separatorBuilder: (_, _) => const Divider(height: 1),
+                      itemBuilder: (context, i) => _StudentTile(
+                        student: students[i],
+                        classes: classes,
+                        onEdit: () => _openForm(classes, student: students[i]),
+                        onWithdraw: () => _confirmWithdraw(students[i]),
+                        onReadmit: () => _repo.readmit(students[i]),
                       ),
                     ),
                   ),
-                  const SizedBox(width: 12),
-                  DropdownButton<String?>(
-                    value: _classId,
-                    hint: const Text('All classes'),
-                    onChanged: (id) => setState(() => _classId = id),
-                    items: [
-                      const DropdownMenuItem(value: null, child: Text('All classes')),
-                      for (final c in classes)
-                        DropdownMenuItem(value: c.id, child: Text(c.displayName)),
-                    ],
-                  ),
-                  const SizedBox(width: 12),
-                  // Withdrawn students are never deleted, so they have to stay
-                  // findable — a leaving certificate gets requested months on.
-                  FilterChip(
-                    label: const Text('Include withdrawn'),
-                    selected: _includeInactive,
-                    onSelected: (v) => setState(() => _includeInactive = v),
-                  ),
-                  const Spacer(),
-                  FilledButton.icon(
-                    onPressed: classes.isEmpty ? null : () => _openForm(classes),
-                    icon: const Icon(Icons.person_add_alt, size: 18),
-                    label: const Text('Enrol student'),
-                  ),
                 ],
-              ),
-            ),
-            const Divider(height: 1),
-            Expanded(
-              child: StreamBuilder<List<Student>>(
-                stream: _repo.watchStudents(
-                  classId: _classId,
-                  search: _search.text,
-                  includeInactive: _includeInactive,
-                ),
-                builder: (context, snapshot) {
-                  final students = snapshot.data ?? const [];
-                  if (students.isEmpty) {
-                    return const EmptyState(
-                      icon: Icons.people_outline,
-                      title: 'No students',
-                      detail: 'Enrol one, or seed the demo data from the Dashboard.',
-                    );
-                  }
-                  return ListView.separated(
-                    itemCount: students.length,
-                    separatorBuilder: (_, _) => const Divider(height: 1),
-                    itemBuilder: (context, i) => _StudentTile(
-                      student: students[i],
-                      classes: classes,
-                      onEdit: () => _openForm(classes, student: students[i]),
-                      onWithdraw: () => _confirmWithdraw(students[i]),
-                      onReadmit: () => _repo.readmit(students[i]),
-                    ),
-                  );
-                },
-              ),
-            ),
-          ],
+              );
+            },
+          ),
         );
       },
     );
