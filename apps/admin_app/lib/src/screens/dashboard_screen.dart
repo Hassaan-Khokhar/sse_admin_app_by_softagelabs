@@ -248,17 +248,61 @@ class _OutboxProbeState extends State<_OutboxProbe> {
   ///
   /// Local only — this is a dev tool, not the withdraw flow. Real removals are
   /// tombstones (schema.sql convention 3), never deletes.
+  ///
+  /// Every syncable table is listed. Missing one leaves orphans that reappear
+  /// on the next "Queue all for push" and quietly repopulate a server you
+  /// thought you had cleared.
   Future<void> _wipe(AppDatabase db) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Wipe all local data?'),
+        content: const Text(
+          'Deletes everything in this PC\'s local database, including anything '
+          'queued but not yet synced. The server is not touched.\n\n'
+          'Demo data can be rebuilt with "Seed demo data".',
+        ),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: const Text('Cancel')),
+          FilledButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: const Text('Wipe')),
+        ],
+      ),
+    );
+    if (!(confirmed ?? false)) return;
+
     setState(() => _busy = true);
     await db.transaction(() async {
+      // Children first, mirroring SyncEngine.pushOrder reversed.
+      await db.delete(db.itemClaims).go();
+      await db.delete(db.lostItems).go();
+      await db.delete(db.notices).go();
+      await db.delete(db.assignments).go();
+      await db.delete(db.timetableSlots).go();
+      await db.delete(db.feeChallans).go();
+      await db.delete(db.feeStructures).go();
+      await db.delete(db.marks).go();
+      await db.delete(db.exams).go();
+      await db.delete(db.teacherAttendance).go();
       await db.delete(db.attendance).go();
       await db.delete(db.students).go();
+      await db.delete(db.teacherClassAssignments).go();
+      await db.delete(db.teachers).go();
+      await db.delete(db.appUsers).go();
       await db.delete(db.subjects).go();
       await db.delete(db.classes).go();
       await db.delete(db.academicYears).go();
-      await db.delete(db.appUsers).go();
       await db.delete(db.schools).go();
+
+      // Local-only bookkeeping. The cursor has to go too — leaving it set
+      // means the next pull asks for "changes since X" and skips everything
+      // written before that, so a wiped device never refills from the server.
       await db.delete(db.outbox).go();
+      await db.delete(db.attachmentOutbox).go();
+      await db.delete(db.syncState).go();
     });
     if (mounted) {
       setState(() {

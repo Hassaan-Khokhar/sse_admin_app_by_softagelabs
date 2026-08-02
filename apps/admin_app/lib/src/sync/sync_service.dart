@@ -212,6 +212,14 @@ class SyncService {
     if (text.contains('row-level security') || text.contains('42501')) {
       return 'Not permitted. Is this account a super_admin?';
     }
+    // Happens when the server was cleared but this PC still holds the data:
+    // an attendance row is pushed for a student the server has never seen.
+    // The row is not lost — it stays queued — but the outbox cannot drain
+    // until the parent rows are uploaded first.
+    if (text.contains('foreign key constraint') || text.contains('23503')) {
+      return 'Server is missing related records. '
+          'Use Dashboard → "Queue all for push" to upload everything.';
+    }
     return text;
   }
 

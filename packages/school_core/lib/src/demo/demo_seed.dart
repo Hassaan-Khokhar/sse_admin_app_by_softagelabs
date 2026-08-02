@@ -49,6 +49,31 @@ class DemoSeeder {
   /// re-shoot of the video shows identical numbers.
   final _random = Random(20260802);
 
+  /// Upserts on a table's NATURAL key rather than its primary key.
+  ///
+  /// `insertOnConflictUpdate` only resolves conflicts on the primary key. But
+  /// most of these tables also carry a natural unique key — attendance is
+  /// `UNIQUE(student_id, date)`, challans are `UNIQUE(student_id, month,
+  /// year)` — and a row created through the app has a random UUIDv7 id, while
+  /// the seeder generates a deterministic UUIDv5 one.
+  ///
+  /// So re-seeding after using the app hits the natural key with a different
+  /// id, `ON CONFLICT(id)` does not apply, and the insert fails outright. That
+  /// is not hypothetical: generating August challans from the Fees screen and
+  /// then re-seeding does exactly this.
+  ///
+  /// Targeting the natural key makes re-seeding idempotent regardless of where
+  /// the existing row came from.
+  Future<void> _upsertOn<T extends Table, D extends DataClass>(
+    TableInfo<T, D> table,
+    Insertable<D> row,
+    List<Column<Object>> naturalKey,
+  ) =>
+      _db.into(table).insert(
+            row,
+            onConflict: DoUpdate<T, D>((_) => row, target: naturalKey),
+          );
+
   static const _classSpecs = [
     (grade: 9, section: 'A', students: 18),
     (grade: 9, section: 'B', students: 17),
@@ -196,8 +221,9 @@ class DemoSeeder {
         final serial = student.admissionNo.split('-').last;
         final monthKey = period.month.toString().padLeft(2, '0');
 
-        await _db.into(_db.feeChallans).insertOnConflictUpdate(
-              FeeChallansCompanion.insert(
+        await _upsertOn(
+          _db.feeChallans,
+          FeeChallansCompanion.insert(
                 id: demoId('challan/${student.id}/${period.year}-$monthKey'),
                 schoolId: schoolId,
                 studentId: student.id,
@@ -224,8 +250,13 @@ class DemoSeeder {
                     Value(isPaid ? PaymentMethod.cash.wire : null),
                 receivedBy: Value(isPaid ? principalUserId : null),
                 updatedAt: now,
-              ),
-            );
+          ),
+          [
+            _db.feeChallans.studentId,
+            _db.feeChallans.month,
+            _db.feeChallans.year,
+          ],
+        );
       }
     }
   }
@@ -233,22 +264,24 @@ class DemoSeeder {
   Future<void> _seedTeachers(String now) async {
     for (var i = 0; i < demoTeachers.length; i++) {
       final teacher = demoTeachers[i];
-      await _db.into(_db.teachers).insertOnConflictUpdate(
-            TeachersCompanion.insert(
-              id: demoId('teacher/$i'),
-              schoolId: schoolId,
-              employeeNo: Value('EMP-${100 + i}'),
-              fullName: teacher.name,
-              qualification: Value(teacher.qualification),
-              // CNIC and phone are staff HR data. They are stored because the
-              // office needs them, and RLS keeps them away from students —
-              // `teachers` has no student policy (migration 001).
-              cnic: Value('35202-${1000000 + i * 7919}-${i % 9 + 1}'),
-              phone: Value('0301-${2000000 + i * 4567}'),
-              joiningDate: Value('${2019 + (i % 6)}-04-01'),
-              updatedAt: now,
-            ),
-          );
+      await _upsertOn(
+        _db.teachers,
+        TeachersCompanion.insert(
+          id: demoId('teacher/$i'),
+          schoolId: schoolId,
+          employeeNo: Value('EMP-${100 + i}'),
+          fullName: teacher.name,
+          qualification: Value(teacher.qualification),
+          // CNIC and phone are staff HR data. They are stored because the
+          // office needs them, and RLS keeps them away from students —
+          // `teachers` has no student policy (migration 001).
+          cnic: Value('35202-${1000000 + i * 7919}-${i % 9 + 1}'),
+          phone: Value('0301-${2000000 + i * 4567}'),
+          joiningDate: Value('${2019 + (i % 6)}-04-01'),
+          updatedAt: now,
+        ),
+        [_db.teachers.schoolId, _db.teachers.employeeNo],
+      );
     }
   }
 
@@ -270,22 +303,24 @@ class DemoSeeder {
 
       for (final teacher in teachers) {
         final status = _rollTeacherStatus();
-        await _db.into(_db.teacherAttendance).insertOnConflictUpdate(
-              TeacherAttendanceCompanion.insert(
-                id: demoId('teacher-attendance/${teacher.id}/$dateKey'),
-                schoolId: schoolId,
-                teacherId: teacher.id,
-                date: dateKey,
-                status: status.wire,
-                checkInTime: Value(_checkInFor(status)),
-                remarks: Value(
-                  status == AttendanceStatus.leave ? _leaveReason() : null,
-                ),
-                markedBy: principalUserId,
-                markedAt: now,
-                updatedAt: now,
-              ),
-            );
+        await _upsertOn(
+          _db.teacherAttendance,
+          TeacherAttendanceCompanion.insert(
+            id: demoId('teacher-attendance/${teacher.id}/$dateKey'),
+            schoolId: schoolId,
+            teacherId: teacher.id,
+            date: dateKey,
+            status: status.wire,
+            checkInTime: Value(_checkInFor(status)),
+            remarks: Value(
+              status == AttendanceStatus.leave ? _leaveReason() : null,
+            ),
+            markedBy: principalUserId,
+            markedAt: now,
+            updatedAt: now,
+          ),
+          [_db.teacherAttendance.teacherId, _db.teacherAttendance.date],
+        );
       }
     }
   }
@@ -321,18 +356,25 @@ class DemoSeeder {
     String classId,
     String now,
   ) async {
-    await _db.into(_db.classes).insertOnConflictUpdate(
-          ClassesCompanion.insert(
-            id: classId,
-            schoolId: schoolId,
-            academicYearId: academicYearId,
-            grade: grade,
-            section: section,
-            displayName: '$grade-$section',
-            room: Value('Room ${grade}0$section'),
-            updatedAt: now,
-          ),
-        );
+    await _upsertOn(
+      _db.classes,
+      ClassesCompanion.insert(
+        id: classId,
+        schoolId: schoolId,
+        academicYearId: academicYearId,
+        grade: grade,
+        section: section,
+        displayName: '$grade-$section',
+        room: Value('Room ${grade}0$section'),
+        updatedAt: now,
+      ),
+      [
+        _db.classes.schoolId,
+        _db.classes.academicYearId,
+        _db.classes.grade,
+        _db.classes.section,
+      ],
+    );
   }
 
   Future<void> _seedSubjects(String classId, String now) async {
@@ -373,8 +415,9 @@ class DemoSeeder {
       final studentId = demoId('student/$grade-$section/$i');
       admission++;
 
-      await _db.into(_db.students).insertOnConflictUpdate(
-            StudentsCompanion.insert(
+      await _upsertOn(
+        _db.students,
+        StudentsCompanion.insert(
               id: studentId,
               schoolId: schoolId,
               classId: Value(classId),
@@ -392,8 +435,9 @@ class DemoSeeder {
               admissionDate: const Value('2026-04-01'),
               status: Value(StudentStatus.active.wire),
               updatedAt: now,
-            ),
-          );
+        ),
+        [_db.students.schoolId, _db.students.admissionNo],
+      );
     }
 
     return admission;
@@ -414,19 +458,21 @@ class DemoSeeder {
       final dateKey = encodeDate(date);
 
       for (final student in students) {
-        await _db.into(_db.attendance).insertOnConflictUpdate(
-              AttendanceCompanion.insert(
-                id: demoId('attendance/${student.id}/$dateKey'),
-                schoolId: schoolId,
-                studentId: student.id,
-                classId: student.classId!,
-                date: dateKey,
-                status: _rollStatus().wire,
-                markedBy: principalUserId,
-                markedAt: now,
-                updatedAt: now,
-              ),
-            );
+        await _upsertOn(
+          _db.attendance,
+          AttendanceCompanion.insert(
+            id: demoId('attendance/${student.id}/$dateKey'),
+            schoolId: schoolId,
+            studentId: student.id,
+            classId: student.classId!,
+            date: dateKey,
+            status: _rollStatus().wire,
+            markedBy: principalUserId,
+            markedAt: now,
+            updatedAt: now,
+          ),
+          [_db.attendance.studentId, _db.attendance.date],
+        );
       }
     }
   }
