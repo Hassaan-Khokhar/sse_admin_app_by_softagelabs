@@ -85,6 +85,20 @@ cursor-based sync, long after the cause was forgotten.
 Now driven by one list in a loop, so it cannot drift again. Includes a backfill
 for rows already inserted with a NULL `server_seq`.
 
+## 004 · fee_challans title column
+
+The local Drift schema added a nullable `title` column to `fee_challans` so that
+custom challans ("Sports Fine", "Lab Fee") can coexist alongside monthly tuition
+for the same student/month. Postgres was never updated, so `SyncEngine.push()`
+failed with:
+
+    Could not find the 'title' column of 'fee_challans' in the schema
+
+This migration adds the column and replaces the old
+`UNIQUE(student_id, month, year)` constraint with an index on
+`(student_id, month, year, COALESCE(title, ''))` — NULL titles (regular
+tuition) still can't duplicate, while named custom challans get their own slot.
+
 ---
 
 ## Message for the student-app dev

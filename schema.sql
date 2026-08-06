@@ -254,6 +254,38 @@ CREATE INDEX idx_attendance_class_date   ON attendance(class_id, date);
 --    late     🟠 orange     holiday ⬜ grey
 --  Attendance % = present + late  /  (total - holiday)
 
+-- Teacher / faculty attendance — kept separate from student attendance because
+-- attendance.student_id is NOT NULL and the unique key (student_id, date) is
+-- the idempotency guarantee the offline retry story rests on. See migration
+-- 003 for the full rationale.
+
+CREATE TABLE teacher_attendance (
+    id              UUID PRIMARY KEY,
+    school_id       UUID NOT NULL REFERENCES schools(id),
+    teacher_id      UUID NOT NULL REFERENCES teachers(id),
+    date            DATE NOT NULL,
+
+    status          TEXT NOT NULL
+                    CHECK (status IN ('present','absent','leave','late','holiday')),
+
+    check_in_time   TEXT,                       -- '08:05', wall-clock text
+    remarks         TEXT,                       -- 'Medical leave', free text
+
+    marked_by       UUID NOT NULL REFERENCES app_users(id),
+    marked_at       TIMESTAMPTZ NOT NULL DEFAULT now(),
+
+    updated_at      TIMESTAMPTZ NOT NULL DEFAULT now(),
+    deleted_at      TIMESTAMPTZ,
+    server_seq      BIGINT,
+    version         INT NOT NULL DEFAULT 1,
+
+    UNIQUE (teacher_id, date)
+);
+
+CREATE INDEX idx_teacher_attendance_teacher_date
+    ON teacher_attendance(teacher_id, date);
+CREATE INDEX idx_teacher_attendance_date
+    ON teacher_attendance(date) WHERE deleted_at IS NULL;
 
 -- ============================================================================
 --  SECTION 4 · EXAMS & MARKS
@@ -596,6 +628,7 @@ $$ LANGUAGE sql STABLE SECURITY DEFINER;
 
 ALTER TABLE students      ENABLE ROW LEVEL SECURITY;
 ALTER TABLE attendance    ENABLE ROW LEVEL SECURITY;
+ALTER TABLE teacher_attendance ENABLE ROW LEVEL SECURITY;
 ALTER TABLE marks         ENABLE ROW LEVEL SECURITY;
 ALTER TABLE fee_challans  ENABLE ROW LEVEL SECURITY;
 ALTER TABLE exams         ENABLE ROW LEVEL SECURITY;
@@ -611,6 +644,8 @@ ALTER TABLE item_claims   ENABLE ROW LEVEL SECURITY;
 CREATE POLICY admin_all_students ON students FOR ALL
     USING (current_role_name() = 'super_admin' AND school_id = current_school_id());
 CREATE POLICY admin_all_attendance ON attendance FOR ALL
+    USING (current_role_name() = 'super_admin' AND school_id = current_school_id());
+CREATE POLICY admin_all_teacher_attendance ON teacher_attendance FOR ALL
     USING (current_role_name() = 'super_admin' AND school_id = current_school_id());
 CREATE POLICY admin_all_marks ON marks FOR ALL
     USING (current_role_name() = 'super_admin' AND school_id = current_school_id());
@@ -681,6 +716,8 @@ $$ LANGUAGE plpgsql;
 CREATE TRIGGER trg_seq_students   BEFORE INSERT OR UPDATE ON students
     FOR EACH ROW EXECUTE FUNCTION stamp_server_seq();
 CREATE TRIGGER trg_seq_attendance BEFORE INSERT OR UPDATE ON attendance
+    FOR EACH ROW EXECUTE FUNCTION stamp_server_seq();
+CREATE TRIGGER trg_seq_teacher_attendance BEFORE INSERT OR UPDATE ON teacher_attendance
     FOR EACH ROW EXECUTE FUNCTION stamp_server_seq();
 CREATE TRIGGER trg_seq_marks      BEFORE INSERT OR UPDATE ON marks
     FOR EACH ROW EXECUTE FUNCTION stamp_server_seq();

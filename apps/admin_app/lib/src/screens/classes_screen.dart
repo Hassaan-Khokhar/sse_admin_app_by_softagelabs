@@ -297,19 +297,12 @@ class _ClassesScreenState extends State<ClassesScreen> {
 
   Future<void> _showPromoteDialog(
       SchoolClass fromClass, List<SchoolClass> allClasses) async {
-    // Other classes (possible promotion targets).
-    final otherClasses =
-        allClasses.where((c) => c.id != fromClass.id).toList();
-
-    if (otherClasses.isEmpty) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text(
-                'No other classes available. Add a target class first.')),
-      );
-      return;
-    }
+    // Only classes that are logically valid for promotion (same or higher grade).
+    final validClasses = allClasses
+        .where((c) => c.id != fromClass.id && c.grade >= fromClass.grade)
+        .toList();
+        
+    final isHighestGrade = !allClasses.any((c) => c.grade > fromClass.grade);
 
     if (!mounted) return;
 
@@ -317,7 +310,8 @@ class _ClassesScreenState extends State<ClassesScreen> {
       context: context,
       builder: (context) => _PromoteDialog(
         fromClass: fromClass,
-        targetClasses: otherClasses,
+        targetClasses: validClasses,
+        isHighestGrade: isHighestGrade,
         studentRepo: _studentRepo,
       ),
     );
@@ -420,11 +414,13 @@ class _PromoteDialog extends StatefulWidget {
   const _PromoteDialog({
     required this.fromClass,
     required this.targetClasses,
+    required this.isHighestGrade,
     required this.studentRepo,
   });
 
   final SchoolClass fromClass;
   final List<SchoolClass> targetClasses;
+  final bool isHighestGrade;
   final StudentRepository studentRepo;
 
   @override
@@ -439,7 +435,10 @@ class _PromoteDialogState extends State<_PromoteDialog> {
   @override
   void initState() {
     super.initState();
-    _targetClassId = widget.targetClasses.first.id;
+    // Default to the first valid target class, or 'graduate' if highest grade, or 'withdraw'.
+    _targetClassId = widget.targetClasses.isNotEmpty 
+        ? widget.targetClasses.first.id 
+        : (widget.isHighestGrade ? 'graduate' : 'withdraw');
   }
 
   Future<void> _promote(List<Student> students) async {
@@ -449,10 +448,19 @@ class _PromoteDialogState extends State<_PromoteDialog> {
 
     setState(() => _promoting = true);
     try {
-      await widget.studentRepo.promoteStudents(
-        students: toPromote,
-        targetClassId: _targetClassId,
-      );
+      if (_targetClassId == 'graduate') {
+        await widget.studentRepo.graduateStudents(students: toPromote);
+      } else if (_targetClassId == 'withdraw') {
+        for (final student in toPromote) {
+          await widget.studentRepo.withdraw(
+              student: student, reason: 'Withdrawn via Promote dialog');
+        }
+      } else {
+        await widget.studentRepo.promoteStudents(
+          students: toPromote,
+          targetClassId: _targetClassId,
+        );
+      }
       if (mounted) Navigator.pop(context);
     } finally {
       if (mounted) setState(() => _promoting = false);
@@ -462,8 +470,12 @@ class _PromoteDialogState extends State<_PromoteDialog> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final targetClass = widget.targetClasses
-        .firstWhere((c) => c.id == _targetClassId);
+    final isGraduating = _targetClassId == 'graduate';
+    final isWithdrawing = _targetClassId == 'withdraw';
+    final isAction = isGraduating || isWithdrawing;
+    final targetClass = isAction
+        ? null
+        : widget.targetClasses.firstWhere((c) => c.id == _targetClassId);
 
     return Dialog(
       child: ConstrainedBox(
@@ -512,12 +524,21 @@ class _PromoteDialogState extends State<_PromoteDialog> {
                   border: OutlineInputBorder(),
                   prefixIcon: Icon(Icons.school_outlined),
                 ),
-                items: widget.targetClasses
-                    .map((c) => DropdownMenuItem(
-                          value: c.id,
-                          child: Text('Class ${c.displayName}'),
-                        ))
-                    .toList(),
+                items: [
+                  ...widget.targetClasses.map((c) => DropdownMenuItem(
+                        value: c.id,
+                        child: Text('Class ${c.displayName}'),
+                      )),
+                  if (widget.isHighestGrade)
+                    const DropdownMenuItem(
+                      value: 'graduate',
+                      child: Text('Graduate / Alumni'),
+                    ),
+                  const DropdownMenuItem(
+                    value: 'withdraw',
+                    child: Text('Withdraw / Expel'),
+                  ),
+                ],
                 onChanged: (val) {
                   if (val != null) setState(() => _targetClassId = val);
                 },
@@ -645,11 +666,25 @@ class _PromoteDialogState extends State<_PromoteDialog> {
                                 child: CircularProgressIndicator(
                                     strokeWidth: 2),
                               )
-                            : const Icon(Icons.arrow_upward, size: 16),
+                            : Icon(
+                                isGraduating
+                                    ? Icons.school
+                                    : isWithdrawing
+                                        ? Icons.person_off
+                                        : Icons.arrow_upward,
+                                size: 16),
                         label: Text(
                           _promoting
-                              ? 'Promoting…'
-                              : 'Promote to ${targetClass.displayName}',
+                              ? (isGraduating
+                                  ? 'Graduating…'
+                                  : isWithdrawing
+                                      ? 'Withdrawing…'
+                                      : 'Promoting…')
+                              : (isGraduating
+                                  ? 'Graduate selected'
+                                  : isWithdrawing
+                                      ? 'Withdraw selected'
+                                      : 'Promote to ${targetClass!.displayName}'),
                         ),
                       ),
                     ],

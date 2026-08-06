@@ -16,22 +16,11 @@
 --
 -- Safe to run more than once (all statements use IF NOT EXISTS / IF EXISTS).
 
-BEGIN;
-
 -- 1. Add the column ----------------------------------------------------------
-DO $$
-BEGIN
-  IF NOT EXISTS (
-    SELECT 1 FROM information_schema.columns
-     WHERE table_name = 'fee_challans' AND column_name = 'title'
-  ) THEN
-    ALTER TABLE fee_challans ADD COLUMN title TEXT;
-  END IF;
-END $$;
+ALTER TABLE fee_challans ADD COLUMN IF NOT EXISTS title TEXT;
 
 -- 2. Replace unique constraint ------------------------------------------------
 -- Drop the old constraint (student_id, month, year).
--- The auto-generated name is fee_challans_student_id_month_year_key.
 ALTER TABLE fee_challans
   DROP CONSTRAINT IF EXISTS fee_challans_student_id_month_year_key;
 
@@ -40,8 +29,6 @@ ALTER TABLE fee_challans
 -- challans (non-NULL title) get their own slot.
 CREATE UNIQUE INDEX IF NOT EXISTS uq_challans_student_month_year_title
   ON fee_challans (student_id, month, year, COALESCE(title, ''));
-
-COMMIT;
 
 -- VERIFY ----------------------------------------------------------------------
 -- Run after applying to confirm the migration took effect.

@@ -45,6 +45,7 @@ class StudentRepository {
         return predicate;
       })
       ..orderBy([
+        (s) => OrderingTerm.desc(s.status),
         (s) => OrderingTerm.asc(s.rollNo),
         (s) => OrderingTerm.asc(s.fullName),
       ]);
@@ -217,6 +218,58 @@ class StudentRepository {
           updatedAt: now,
         ),
       );
+    }
+  }
+  /// Graduates [students], marking their status as graduated and recording the left_date.
+  Future<void> graduateStudents({
+    required List<Student> students,
+  }) async {
+    for (final student in students) {
+      final now = nowTimestamp();
+      await _writer.upsert(
+        table: _db.students,
+        rowId: student.id,
+        row: StudentsCompanion.insert(
+          id: student.id,
+          schoolId: student.schoolId,
+          classId: Value(student.classId),
+          admissionNo: student.admissionNo,
+          rollNo: Value(student.rollNo),
+          fullName: student.fullName,
+          fatherName: Value(student.fatherName),
+          guardianPhone: Value(student.guardianPhone),
+          dateOfBirth: Value(student.dateOfBirth),
+          gender: Value(student.gender),
+          address: Value(student.address),
+          admissionDate: Value(student.admissionDate),
+          status: Value(StudentStatus.graduated.wire),
+          leftDate: Value(encodeDate(DateTime.now())),
+          leftReason: const Value('Graduated'),
+          updatedAt: now,
+        ),
+      );
+
+      if (student.userId case final userId?) {
+        final user = await (_db.select(_db.appUsers)
+              ..where((u) => u.id.equals(userId)))
+            .getSingleOrNull();
+        if (user != null) {
+          await _writer.upsert(
+            table: _db.appUsers,
+            rowId: user.id,
+            row: AppUsersCompanion.insert(
+              id: user.id,
+              schoolId: user.schoolId,
+              role: user.role,
+              fullName: user.fullName,
+              email: Value(user.email),
+              phone: Value(user.phone),
+              isActive: const Value(false),
+              updatedAt: now,
+            ),
+          );
+        }
+      }
     }
   }
 }
