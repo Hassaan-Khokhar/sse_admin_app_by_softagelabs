@@ -32,7 +32,8 @@ class _TimetableScreenState extends State<TimetableScreen> {
     (day: 6, label: 'Sat'),
   ];
 
-  static const _periods = 8;
+  int _periods = 8;
+  final Set<int> _holidayDays = {};
 
   @override
   void didChangeDependencies() {
@@ -129,7 +130,18 @@ class _TimetableScreenState extends State<TimetableScreen> {
                   ),
                   children: [
                     const _HeaderCell('Period'),
-                    for (final day in _days) _HeaderCell(day.label),
+                    for (final day in _days) 
+                      _HeaderCell(
+                        day.label, 
+                        onTap: () => setState(() {
+                          if (_holidayDays.contains(day.day)) {
+                            _holidayDays.remove(day.day);
+                          } else {
+                            _holidayDays.add(day.day);
+                          }
+                        }),
+                        isHoliday: _holidayDays.contains(day.day),
+                      ),
                   ],
                 ),
                 for (var period = 1; period <= _periods; period++)
@@ -137,20 +149,42 @@ class _TimetableScreenState extends State<TimetableScreen> {
                     children: [
                       _HeaderCell('$period'),
                       for (final day in _days)
-                        _SlotCell(
-                          slot: byCell['${day.day}/$period'],
-                          subject: subjectsById[
-                              byCell['${day.day}/$period']?.subjectId],
-                          onTap: () => _editSlot(
-                            schoolClass: schoolClass,
-                            subjects: subjects,
-                            dayOfWeek: day.day,
-                            periodNo: period,
-                            existing: byCell['${day.day}/$period'],
-                          ),
-                        ),
+                        _holidayDays.contains(day.day)
+                            ? Container(
+                                height: 66,
+                                color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+                                child: Center(
+                                  child: Text('Holiday', 
+                                    style: TextStyle(
+                                      color: Theme.of(context).disabledColor, 
+                                      fontStyle: FontStyle.italic
+                                    )
+                                  )
+                                ),
+                              )
+                            : _SlotCell(
+                                slot: byCell['${day.day}/$period'],
+                                subject: subjectsById[
+                                    byCell['${day.day}/$period']?.subjectId],
+                                onTap: () => _editSlot(
+                                  schoolClass: schoolClass,
+                                  subjects: subjects,
+                                  dayOfWeek: day.day,
+                                  periodNo: period,
+                                  existing: byCell['${day.day}/$period'],
+                                ),
+                              ),
                     ],
                   ),
+                TableRow(
+                  children: [
+                    InkWell(
+                      onTap: () => setState(() => _periods++),
+                      child: const _HeaderCell('+ Add'),
+                    ),
+                    for (final day in _days) const SizedBox(height: 66),
+                  ]
+                ),
               ],
             ),
           ),
@@ -305,19 +339,37 @@ class _TimetableScreenState extends State<TimetableScreen> {
 }
 
 class _HeaderCell extends StatelessWidget {
-  const _HeaderCell(this.text);
+  const _HeaderCell(this.text, {this.onTap, this.isHoliday = false});
 
   final String text;
+  final VoidCallback? onTap;
+  final bool isHoliday;
 
   @override
-  Widget build(BuildContext context) => Padding(
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
-        child: Text(
-          text,
-          textAlign: TextAlign.center,
-          style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13),
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    Widget child = Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
+      child: Text(
+        text,
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          fontWeight: FontWeight.w700, 
+          fontSize: 13,
+          color: isHoliday ? theme.colorScheme.primary : null,
         ),
+      ),
+    );
+
+    if (onTap != null) {
+      child = InkWell(
+        onTap: onTap,
+        child: child,
       );
+    }
+
+    return child;
+  }
 }
 
 class _SlotCell extends StatelessWidget {

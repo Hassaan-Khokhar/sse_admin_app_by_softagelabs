@@ -90,7 +90,6 @@ enum AdminSection {
   marks('Marks', Icons.school_rounded, AppTheme.navMarks),
   fees('Fees', Icons.payments_rounded, AppTheme.navFees),
   timetable('Timetable', Icons.calendar_month_rounded, AppTheme.navTimetable),
-  assignments('Assignments', Icons.assignment_rounded, AppTheme.navAssignments),
   notices('Notices', Icons.campaign_rounded, AppTheme.navNotices),
   lostFound('Lost & Found', Icons.travel_explore_rounded, AppTheme.navLostFound);
 
@@ -172,7 +171,6 @@ class _AdminShellState extends State<AdminShell> {
         AdminSection.marks => const MarksScreen(),
         AdminSection.classes => const ClassesScreen(),
         AdminSection.timetable => const TimetableScreen(),
-        AdminSection.assignments => const AssignmentsScreen(),
         AdminSection.notices => const NoticesScreen(),
         AdminSection.lostFound => const LostFoundScreen(),
       };
