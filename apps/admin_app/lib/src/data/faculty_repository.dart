@@ -20,6 +20,30 @@ class FacultyRepository {
     return query.watch();
   }
 
+  Future<void> saveTeacher({
+    required String schoolId,
+    String? id,
+    String? employeeNo,
+    required String fullName,
+    String? phone,
+    String? qualification,
+  }) async {
+    final rowId = id ?? newId();
+    await _writer.upsert(
+      table: _db.teachers,
+      rowId: rowId,
+      row: TeachersCompanion.insert(
+        id: rowId,
+        schoolId: schoolId,
+        employeeNo: Value(employeeNo),
+        fullName: fullName,
+        phone: Value(phone),
+        qualification: Value(qualification),
+        updatedAt: nowTimestamp(),
+      ),
+    );
+  }
+
   /// Today's (or any day's) staff register, keyed by teacher id.
   ///
   /// A teacher absent from the map has not been marked — which is not the same
