@@ -53,6 +53,7 @@ class SchoolRepository {
     required int grade,
     required String section,
     String? room,
+    String? classTeacherId,
   }) async {
     final rowId = id ?? newId();
     await _writer.upsert(
@@ -66,6 +67,7 @@ class SchoolRepository {
         section: section,
         // Denormalised so list screens do not join just to render a label.
         displayName: '$grade-$section',
+        classTeacherId: Value(classTeacherId),
         room: Value(room),
         updatedAt: nowTimestamp(),
       ),

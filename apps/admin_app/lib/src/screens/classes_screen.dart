@@ -180,6 +180,7 @@ class _ClassesScreenState extends State<ClassesScreen> {
                                 icon: const Icon(Icons.delete_outline, size: 18),
                                 onPressed: () => _repo.deleteSubject(s.id),
                               ),
+                              onTap: () => _editSubject(schoolClass, s),
                             );
                           },
                         );
@@ -195,78 +196,23 @@ class _ClassesScreenState extends State<ClassesScreen> {
   Future<void> _addClass() async {
     final school = await _repo.school();
     final year = await _repo.currentYear();
+    final teachers = await _repo.watchTeachers().first;
     if (school == null || year == null || !mounted) return;
 
-    final grade = TextEditingController(text: '9');
-    final section = TextEditingController(text: 'A');
-    final room = TextEditingController();
-
-    final saved = await showDialog<bool>(
+    final result = await showDialog<({int grade, String section, String? room, String? classTeacherId})>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Add class'),
-        content: SizedBox(
-          width: 360,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: TextField(
-                      controller: grade,
-                      keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(
-                        labelText: 'Grade (1–12)',
-                        border: OutlineInputBorder(),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: TextField(
-                      controller: section,
-                      decoration: const InputDecoration(
-                        labelText: 'Section',
-                        border: OutlineInputBorder(),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: room,
-                decoration: const InputDecoration(
-                  labelText: 'Room (optional)',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(context, false),
-              child: const Text('Cancel')),
-          FilledButton(
-              onPressed: () => Navigator.pop(context, true),
-              child: const Text('Add')),
-        ],
-      ),
+      builder: (context) => _AddClassDialog(teachers: teachers),
     );
 
-    if (saved ?? false) {
+    if (result != null) {
       await _repo.saveClass(
         schoolId: school.id,
         academicYearId: year.id,
-        grade: int.tryParse(grade.text.trim()) ?? 1,
-        section: section.text.trim().toUpperCase(),
-        room: room.text.trim().isEmpty ? null : room.text.trim(),
+        grade: result.grade,
+        section: result.section,
+        room: result.room,
+        classTeacherId: result.classTeacherId,
       );
-    }
-    for (final c in [grade, section, room]) {
-      c.dispose();
     }
   }
 
@@ -291,6 +237,31 @@ class _ClassesScreenState extends State<ClassesScreen> {
         name: result.name.trim(),
         teacherId: result.teacherId,
         sortOrder: existingCount,
+      );
+    }
+  }
+
+  Future<void> _editSubject(SchoolClass schoolClass, Subject subject) async {
+    final teachers = await _repo.watchTeachers().first;
+    if (!mounted) return;
+
+    final result = await showDialog<({String name, String? teacherId})>(
+      context: context,
+      builder: (context) => _AddSubjectDialog(
+        className: schoolClass.displayName,
+        teachers: teachers,
+        subject: subject,
+      ),
+    );
+
+    if (result != null && result.name.trim().isNotEmpty) {
+      await _repo.saveSubject(
+        id: subject.id,
+        schoolId: schoolClass.schoolId,
+        classId: schoolClass.id,
+        name: result.name.trim(),
+        teacherId: result.teacherId,
+        sortOrder: subject.sortOrder,
       );
     }
   }
@@ -326,18 +297,20 @@ class _AddSubjectDialog extends StatefulWidget {
   const _AddSubjectDialog({
     required this.className,
     required this.teachers,
+    this.subject,
   });
 
   final String className;
   final List<Teacher> teachers;
+  final Subject? subject;
 
   @override
   State<_AddSubjectDialog> createState() => _AddSubjectDialogState();
 }
 
 class _AddSubjectDialogState extends State<_AddSubjectDialog> {
-  final _nameController = TextEditingController();
-  String? _selectedTeacherId;
+  late final _nameController = TextEditingController(text: widget.subject?.name);
+  late String? _selectedTeacherId = widget.subject?.teacherId;
 
   @override
   void dispose() {
@@ -348,7 +321,9 @@ class _AddSubjectDialogState extends State<_AddSubjectDialog> {
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: Text('Add subject to ${widget.className}'),
+      title: Text(widget.subject == null 
+          ? 'Add subject to ${widget.className}'
+          : 'Edit subject'),
       content: SizedBox(
         width: 360,
         child: Column(
@@ -399,7 +374,7 @@ class _AddSubjectDialogState extends State<_AddSubjectDialog> {
               (name: _nameController.text, teacherId: _selectedTeacherId),
             );
           },
-          child: const Text('Add'),
+          child: Text(widget.subject == null ? 'Add' : 'Save'),
         ),
       ],
     );
@@ -695,6 +670,108 @@ class _PromoteDialogState extends State<_PromoteDialog> {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _AddClassDialog extends StatefulWidget {
+  const _AddClassDialog({required this.teachers});
+
+  final List<Teacher> teachers;
+
+  @override
+  State<_AddClassDialog> createState() => _AddClassDialogState();
+}
+
+class _AddClassDialogState extends State<_AddClassDialog> {
+  final _grade = TextEditingController(text: '9');
+  final _section = TextEditingController(text: 'A');
+  final _room = TextEditingController();
+  String? _classTeacherId;
+
+  @override
+  void dispose() {
+    _grade.dispose();
+    _section.dispose();
+    _room.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('Add class'),
+      content: SizedBox(
+        width: 360,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _grade,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(
+                      labelText: 'Grade (1–12)',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: TextField(
+                    controller: _section,
+                    decoration: const InputDecoration(
+                      labelText: 'Section',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _room,
+              decoration: const InputDecoration(
+                labelText: 'Room (optional)',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 12),
+            DropdownButtonFormField<String>(
+              value: _classTeacherId,
+              decoration: const InputDecoration(
+                labelText: 'Class incharge (optional)',
+                border: OutlineInputBorder(),
+              ),
+              items: [
+                const DropdownMenuItem(value: null, child: Text('No teacher')),
+                for (final t in widget.teachers)
+                  DropdownMenuItem(value: t.id, child: Text(t.fullName)),
+              ],
+              onChanged: (v) => setState(() => _classTeacherId = v),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel')),
+        FilledButton(
+            onPressed: () => Navigator.pop(
+                context,
+                (
+                  grade: int.tryParse(_grade.text.trim()) ?? 1,
+                  section: _section.text.trim().toUpperCase(),
+                  room: _room.text.trim().isEmpty ? null : _room.text.trim(),
+                  classTeacherId: _classTeacherId,
+                ),
+            ),
+            child: const Text('Add'),
+        ),
+      ],
     );
   }
 }
