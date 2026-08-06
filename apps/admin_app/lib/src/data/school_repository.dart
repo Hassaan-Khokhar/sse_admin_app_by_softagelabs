@@ -90,6 +90,7 @@ class SchoolRepository {
     String? id,
     required String name,
     String? code,
+    String? teacherId,
     int totalMarks = 100,
     int sortOrder = 0,
   }) async {
@@ -103,6 +104,7 @@ class SchoolRepository {
         classId: classId,
         name: name,
         code: Value(code),
+        teacherId: Value(teacherId),
         totalMarks: Value(totalMarks),
         sortOrder: Value(sortOrder),
         updatedAt: nowTimestamp(),

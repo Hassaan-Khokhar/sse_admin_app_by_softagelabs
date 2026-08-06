@@ -343,6 +343,8 @@ CREATE TABLE fee_challans (
     month           INT  NOT NULL CHECK (month BETWEEN 1 AND 12),
     year            INT  NOT NULL,
 
+    title           TEXT,                       -- e.g. 'Sports Fine', NULL = regular tuition
+
     tuition_fee     NUMERIC(10,2) NOT NULL DEFAULT 0,
     admission_fee   NUMERIC(10,2) NOT NULL DEFAULT 0,
     exam_fee        NUMERIC(10,2) NOT NULL DEFAULT 0,
@@ -366,7 +368,7 @@ CREATE TABLE fee_challans (
     server_seq      BIGINT,
     version         INT NOT NULL DEFAULT 1,
 
-    UNIQUE (student_id, month, year)            -- can't double-bill a month
+    UNIQUE (student_id, month, year, title)     -- one row per student/month/title
 );
 
 CREATE INDEX idx_challans_student ON fee_challans(student_id, year, month);

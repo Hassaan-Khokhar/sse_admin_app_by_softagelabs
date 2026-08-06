@@ -183,4 +183,40 @@ class StudentRepository {
         dateOfBirth: student.dateOfBirth,
         address: student.address,
       );
+
+  /// Promotes [students] to [targetClassId].
+  ///
+  /// Updates each student's `class_id` to the new class and clears `roll_no`
+  /// because roll numbers are per-class and must be re-assigned by the admin
+  /// once students settle into their new class.
+  Future<void> promoteStudents({
+    required List<Student> students,
+    required String targetClassId,
+  }) async {
+    for (final student in students) {
+      final now = nowTimestamp();
+      await _writer.upsert(
+        table: _db.students,
+        rowId: student.id,
+        row: StudentsCompanion.insert(
+          id: student.id,
+          schoolId: student.schoolId,
+          classId: Value(targetClassId),
+          admissionNo: student.admissionNo,
+          rollNo: const Value(null), // reset — re-assigned per new class
+          fullName: student.fullName,
+          fatherName: Value(student.fatherName),
+          guardianPhone: Value(student.guardianPhone),
+          dateOfBirth: Value(student.dateOfBirth),
+          gender: Value(student.gender),
+          address: Value(student.address),
+          admissionDate: Value(student.admissionDate),
+          status: Value(student.status),
+          leftDate: Value(student.leftDate),
+          leftReason: Value(student.leftReason),
+          updatedAt: now,
+        ),
+      );
+    }
+  }
 }
