@@ -11,7 +11,6 @@ import 'screens/timetable_screen.dart';
 import 'screens/dashboard_screen.dart';
 import 'screens/lost_found_screen.dart';
 import 'screens/notices_screen.dart';
-import 'screens/faculty_screen.dart';
 import 'screens/fees_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/marks_screen.dart';
@@ -85,7 +84,6 @@ enum AdminSection {
   dashboard('Dashboard', Icons.dashboard_rounded, AppTheme.navDashboard),
   classes('Classes', Icons.meeting_room_rounded, AppTheme.navClasses),
   students('Students', Icons.groups_rounded, AppTheme.navStudents),
-  faculty('Faculty', Icons.badge_rounded, AppTheme.navFaculty),
   attendance('Attendance', Icons.fact_check_rounded, AppTheme.navAttendance),
   marks('Marks', Icons.school_rounded, AppTheme.navMarks),
   fees('Fees', Icons.payments_rounded, AppTheme.navFees),
@@ -166,7 +164,6 @@ class _AdminShellState extends State<AdminShell> {
   Widget _buildSection() => switch (_section) {
         AdminSection.dashboard => const DashboardScreen(),
         AdminSection.attendance => const AttendanceScreen(),
-        AdminSection.faculty => const FacultyAttendanceView(),
         AdminSection.students => const StudentsScreen(),
         AdminSection.fees => const FeesScreen(),
         AdminSection.marks => const MarksScreen(),

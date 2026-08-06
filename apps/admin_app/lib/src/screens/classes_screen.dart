@@ -373,7 +373,7 @@ class _AddSubjectDialogState extends State<_AddSubjectDialog> {
               items: [
                 const DropdownMenuItem(
                   value: null,
-                  child: Text('— No teacher —'),
+                  child: Text('No teacher'),
                 ),
                 ...widget.teachers.map(
                   (t) => DropdownMenuItem(
@@ -532,11 +532,11 @@ class _PromoteDialogState extends State<_PromoteDialog> {
                   if (widget.isHighestGrade)
                     const DropdownMenuItem(
                       value: 'graduate',
-                      child: Text('Graduate / Alumni'),
+                      child: Text('Graduate or Alumni'),
                     ),
                   const DropdownMenuItem(
                     value: 'withdraw',
-                    child: Text('Withdraw / Expel'),
+                    child: Text('Withdraw or Expel'),
                   ),
                 ],
                 onChanged: (val) {
