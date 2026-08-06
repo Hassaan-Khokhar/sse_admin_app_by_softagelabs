@@ -90,7 +90,7 @@ class AppDatabase extends _$AppDatabase {
             await m.alterTable(TableMigration(feeChallans));
           }
           if (from < 5) {
-            await m.alterTable(TableMigration(students));
+            await m.addColumn(students, students.documents);
           }
           await _createIndexes();
         },
