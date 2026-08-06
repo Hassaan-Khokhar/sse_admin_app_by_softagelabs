@@ -200,6 +200,7 @@ CREATE TABLE students (
                       CHECK (status IN ('active','withdrawn','graduated','suspended')),
     left_date         DATE,
     left_reason       TEXT,
+    documents         TEXT,
 
     updated_at        TIMESTAMPTZ NOT NULL DEFAULT now(),
     deleted_at        TIMESTAMPTZ,

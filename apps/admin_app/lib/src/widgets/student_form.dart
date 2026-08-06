@@ -12,6 +12,7 @@ typedef StudentFormData = ({
   String? guardianPhone,
   String? dateOfBirth,
   String? address,
+  String? documents,
 });
 
 /// Enrol or edit a student.
@@ -42,6 +43,7 @@ class _StudentFormDialogState extends State<StudentFormDialog> {
   late final TextEditingController _guardianPhone;
   late final TextEditingController _dateOfBirth;
   late final TextEditingController _address;
+  late final TextEditingController _documents;
   String? _classId;
   String? _gender;
   bool _saving = false;
@@ -58,6 +60,7 @@ class _StudentFormDialogState extends State<StudentFormDialog> {
     _guardianPhone = TextEditingController(text: s?.guardianPhone ?? '');
     _dateOfBirth = TextEditingController(text: s?.dateOfBirth ?? '');
     _address = TextEditingController(text: s?.address ?? '');
+    _documents = TextEditingController(text: s?.documents ?? '');
     _classId = s?.classId ?? widget.classes.firstOrNull?.id;
     _gender = s?.gender;
   }
@@ -72,6 +75,7 @@ class _StudentFormDialogState extends State<StudentFormDialog> {
       _guardianPhone,
       _dateOfBirth,
       _address,
+      _documents,
     ]) {
       c.dispose();
     }
@@ -88,9 +92,10 @@ class _StudentFormDialogState extends State<StudentFormDialog> {
       rollNo: int.tryParse(_rollNo.text.trim()),
       classId: _classId,
       gender: _gender,
-      guardianPhone: _nullIfBlank(_guardianPhone.text),
-      dateOfBirth: _nullIfBlank(_dateOfBirth.text),
-      address: _nullIfBlank(_address.text),
+      guardianPhone: _guardianPhone.text.trim(),
+      dateOfBirth: _dateOfBirth.text.trim(),
+      address: _address.text.trim(),
+      documents: _nullIfBlank(_documents.text),
     ));
     if (mounted) Navigator.pop(context);
   }
@@ -111,7 +116,7 @@ class _StudentFormDialogState extends State<StudentFormDialog> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 _field(_fullName, 'Full name', required: true),
-                _field(_fatherName, "Father's name"),
+                _field(_fatherName, "Father's name", required: true),
                 Row(
                   children: [
                     // Permanent and school-wide. Distinct from roll no, which
@@ -121,7 +126,7 @@ class _StudentFormDialogState extends State<StudentFormDialog> {
                     ),
                     const SizedBox(width: 12),
                     Expanded(
-                      child: _field(_rollNo, 'Roll no', keyboard: TextInputType.number),
+                      child: _field(_rollNo, 'Roll no', required: true, keyboard: TextInputType.number),
                     ),
                   ],
                 ),
@@ -140,6 +145,7 @@ class _StudentFormDialogState extends State<StudentFormDialog> {
                                 value: c.id, child: Text(c.displayName)),
                         ],
                         onChanged: (v) => setState(() => _classId = v),
+                        validator: (v) => v == null ? 'Required' : null,
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -155,6 +161,7 @@ class _StudentFormDialogState extends State<StudentFormDialog> {
                             DropdownMenuItem(value: g.wire, child: Text(g.wire)),
                         ],
                         onChanged: (v) => setState(() => _gender = v),
+                        validator: (v) => v == null ? 'Required' : null,
                       ),
                     ),
                   ],
@@ -162,9 +169,10 @@ class _StudentFormDialogState extends State<StudentFormDialog> {
                 const SizedBox(height: 12),
                 // Office use only. This must never be rendered in the student
                 // app — these are minors (CLAUDE.md §7).
-                _field(_guardianPhone, "Guardian's phone (office use only)"),
-                _field(_dateOfBirth, 'Date of birth (YYYY-MM-DD)'),
-                _field(_address, 'Address'),
+                _field(_guardianPhone, "Guardian's phone (office use only)", required: true, keyboard: TextInputType.phone),
+                _field(_dateOfBirth, 'Date of birth (YYYY-MM-DD)', required: true),
+                _field(_address, 'Address', required: true),
+                _field(_documents, 'Documents submitted (e.g., Birth cert, Photos)', keyboard: TextInputType.multiline),
               ],
             ),
           ),

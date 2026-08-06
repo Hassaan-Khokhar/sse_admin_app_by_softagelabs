@@ -141,6 +141,7 @@ class Students extends Table with SyncColumns {
   TextColumn get gender => text().nullable()();
 
   TextColumn get address => text().nullable()();
+  TextColumn get documents => text().nullable()();
   TextColumn get photoUrl => text().named('photo_url').nullable()();
   TextColumn get admissionDate => text().named('admission_date').nullable()();
 

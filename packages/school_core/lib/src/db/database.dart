@@ -72,7 +72,7 @@ class AppDatabase extends _$AppDatabase {
   /// v1 → v2: `teacher_attendance` (migration 003).
   /// v2 → v4: Add `title` to `fee_challans` and recreate for unique constraint.
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -88,6 +88,9 @@ class AppDatabase extends _$AppDatabase {
           }
           if (from < 4) {
             await m.alterTable(TableMigration(feeChallans));
+          }
+          if (from < 5) {
+            await m.alterTable(TableMigration(students));
           }
           await _createIndexes();
         },

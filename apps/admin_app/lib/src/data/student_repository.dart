@@ -82,6 +82,7 @@ class StudentRepository {
     String? guardianPhone,
     String? dateOfBirth,
     String? address,
+    String? documents,
     String status = 'active',
   }) async {
     final now = nowTimestamp();
@@ -102,6 +103,7 @@ class StudentRepository {
         dateOfBirth: Value(dateOfBirth),
         gender: Value(gender),
         address: Value(address),
+        documents: Value(documents),
         admissionDate: Value(encodeDate(DateTime.now())),
         status: Value(status),
         updatedAt: now,
