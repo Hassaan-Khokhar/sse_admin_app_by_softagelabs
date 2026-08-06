@@ -5,6 +5,7 @@ import '../data/app_scope.dart';
 import '../data/attendance_repository.dart';
 import '../data/marks_repository.dart';
 import '../widgets/empty_state.dart';
+import '../widgets/page_shell.dart';
 
 /// Exams and mark entry.
 class MarksScreen extends StatefulWidget {
@@ -135,14 +136,6 @@ class _MarksScreenState extends State<MarksScreen> {
                         ),
                         const SizedBox(width: 16),
                         Expanded(child: _subjectPicker(classId)),
-                        const SizedBox(width: 16),
-                        _PaperTotalField(
-                          key: ValueKey('${exam.id}/${_subject?.id}'),
-                          initial: _paperTotal ??
-                              _subject?.totalMarks.toDouble() ??
-                              100,
-                          onChanged: (total) => _applyPaperTotal(exam, total),
-                        ),
                       ],
                     ),
                   ),
@@ -218,24 +211,35 @@ class _MarksScreenState extends State<MarksScreen> {
           builder: (context, marksSnapshot) {
             final marks = marksSnapshot.data ?? const <String, Mark>{};
 
-            return ListView.separated(
-              itemCount: roster.length,
-              separatorBuilder: (_, _) => const Divider(height: 1),
-              itemBuilder: (context, i) => _MarkRow(
-                student: roster[i],
-                mark: marks[roster[i].id],
-                totalMarks: total,
-                onSubmit: (value, absent) => _repo.saveMark(
-                  student: roster[i],
-                  exam: exam,
-                  subject: subject,
-                  obtained: value,
-                  total: total,
-                  isAbsent: absent,
-                  existingId: marks[roster[i].id]?.id,
-                  enteredBy: _actor,
+            double totalObtained = 0;
+            double totalPossible = 0;
+            
+            for (final mark in marks.values) {
+               if (mark.isAbsent) continue;
+               if (mark.obtainedMarks != null) {
+                 totalObtained += mark.obtainedMarks!;
+                 totalPossible += mark.totalMarks;
+               }
+            }
+            final overallPercent = totalPossible > 0 ? (totalObtained / totalPossible * 100).toStringAsFixed(1) : '-';
+
+            return Column(
+              children: [
+                ListSummaryBar(children: [
+                  Text('Class Average: $overallPercent%', style: Theme.of(context).textTheme.titleSmall),
+                ]),
+                Expanded(
+                  child: ListView.separated(
+                    itemCount: roster.length,
+                    separatorBuilder: (_, _) => const Divider(height: 1),
+                    itemBuilder: (context, i) => _MarkRow(
+                      student: roster[i],
+                      mark: marks[roster[i].id],
+                      totalMarks: total,
+                    ),
+                  ),
                 ),
-              ),
+              ],
             );
           },
         );
@@ -395,167 +399,51 @@ class _ExamBar extends StatelessWidget {
   }
 }
 
-/// "Out of N" for this paper.
-///
-/// Separate from the subject's default because a class test is out of 10 or 25
-/// while the subject is nominally out of 100. Committing on blur or Enter
-/// rather than per keystroke — otherwise typing "25" would briefly re-grade the
-/// whole class against a total of 2.
-class _PaperTotalField extends StatefulWidget {
-  const _PaperTotalField({
-    required this.initial,
-    required this.onChanged,
-    super.key,
-  });
-
-  final double initial;
-  final ValueChanged<double> onChanged;
-
-  @override
-  State<_PaperTotalField> createState() => _PaperTotalFieldState();
-}
-
-class _PaperTotalFieldState extends State<_PaperTotalField> {
-  late final TextEditingController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller =
-        TextEditingController(text: widget.initial.toStringAsFixed(0));
-  }
-
-  @override
-  void didUpdateWidget(_PaperTotalField old) {
-    super.didUpdateWidget(old);
-    if (widget.initial != old.initial) {
-      _controller.text = widget.initial.toStringAsFixed(0);
-    }
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  void _commit() {
-    final value = double.tryParse(_controller.text.trim());
-    if (value == null || value <= 0) {
-      _controller.text = widget.initial.toStringAsFixed(0);
-      return;
-    }
-    if (value != widget.initial) widget.onChanged(value);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: 150,
-      child: Focus(
-        onFocusChange: (has) {
-          if (!has) _commit();
-        },
-        child: TextField(
-          controller: _controller,
-          keyboardType: TextInputType.number,
-          textAlign: TextAlign.right,
-          onSubmitted: (_) => _commit(),
-          decoration: const InputDecoration(
-            isDense: true,
-            labelText: 'Paper total',
-            prefixText: 'out of ',
-            border: OutlineInputBorder(),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _MarkRow extends StatefulWidget {
+class _MarkRow extends StatelessWidget {
   const _MarkRow({
     required this.student,
     required this.mark,
     required this.totalMarks,
-    required this.onSubmit,
+    super.key,
   });
 
   final Student student;
   final Mark? mark;
   final double totalMarks;
-  final Future<void> Function(double? obtained, bool isAbsent) onSubmit;
-
-  @override
-  State<_MarkRow> createState() => _MarkRowState();
-}
-
-class _MarkRowState extends State<_MarkRow> {
-  late final TextEditingController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = TextEditingController(
-      text: widget.mark?.obtainedMarks?.toStringAsFixed(0) ?? '',
-    );
-  }
-
-  @override
-  void didUpdateWidget(_MarkRow old) {
-    super.didUpdateWidget(old);
-    final incoming = widget.mark?.obtainedMarks?.toStringAsFixed(0) ?? '';
-    // Only overwrite when the field is not being edited, or a sync arriving
-    // mid-entry would yank the number out from under the principal's fingers.
-    if (!_focused && incoming != _controller.text) _controller.text = incoming;
-  }
-
-  bool _focused = false;
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final isAbsent = widget.mark?.isAbsent ?? false;
-    final grade = widget.mark?.grade;
+    final isAbsent = mark?.isAbsent ?? false;
+    final grade = mark?.grade;
+    final obtained = mark?.obtainedMarks;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
       child: Row(
         children: [
           SizedBox(
             width: 40,
-            child: Text('${widget.student.rollNo ?? '—'}',
+            child: Text('${student.rollNo ?? '—'}',
                 style: TextStyle(color: theme.disabledColor)),
           ),
-          Expanded(child: Text(widget.student.fullName)),
+          Expanded(child: Text(student.fullName)),
           SizedBox(
-            width: 120,
-            child: Focus(
-              onFocusChange: (has) {
-                _focused = has;
-                if (!has) _submit();
-              },
-              child: TextField(
-                controller: _controller,
-                enabled: !isAbsent,
-                keyboardType: TextInputType.number,
-                textAlign: TextAlign.right,
-                onSubmitted: (_) => _submit(),
-                decoration: InputDecoration(
-                  isDense: true,
-                  border: const OutlineInputBorder(),
-                  suffixText: '/ ${widget.totalMarks.toStringAsFixed(0)}',
-                ),
+            width: 100,
+            child: Text(
+              isAbsent
+                  ? 'Absent'
+                  : obtained != null
+                      ? '${obtained.toStringAsFixed(0)} / ${totalMarks.toStringAsFixed(0)}'
+                      : '— / ${totalMarks.toStringAsFixed(0)}',
+              textAlign: TextAlign.right,
+              style: TextStyle(
+                color: isAbsent ? theme.colorScheme.error : null,
+                fontStyle: isAbsent || obtained == null ? FontStyle.italic : null,
               ),
             ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: 24),
           SizedBox(
             width: 44,
             child: Text(
@@ -566,22 +454,8 @@ class _MarkRowState extends State<_MarkRow> {
               ),
             ),
           ),
-          const SizedBox(width: 8),
-          FilterChip(
-            label: const Text('Absent'),
-            selected: isAbsent,
-            onSelected: (v) => widget.onSubmit(v ? null : null, v),
-          ),
         ],
       ),
     );
-  }
-
-  void _submit() {
-    final raw = _controller.text.trim();
-    final value = raw.isEmpty ? null : double.tryParse(raw);
-    if (value == null && raw.isNotEmpty) return; // ignore junk
-    if (value == widget.mark?.obtainedMarks) return; // nothing changed
-    widget.onSubmit(value, false);
   }
 }

@@ -109,6 +109,7 @@ class DemoSeeder {
       await _seedAttendance(now);
       await _seedTeacherAttendance(now);
       await _seedFees(now);
+      await _seedMarks(now);
     });
   }
 
@@ -491,5 +492,70 @@ class DemoSeeder {
     if (roll < 94) return AttendanceStatus.absent;
     if (roll < 97) return AttendanceStatus.arrivedLate;
     return AttendanceStatus.leave;
+  }
+
+  Future<void> _seedMarks(String now) async {
+    final examId = demoId('exam/first-term');
+    
+    await _db.into(_db.exams).insertOnConflictUpdate(
+      ExamsCompanion.insert(
+        id: examId,
+        schoolId: schoolId,
+        academicYearId: academicYearId,
+        name: 'First Term',
+        examType: ExamType.firstTerm.wire,
+        isPublished: const Value(true),
+        updatedAt: now,
+      ),
+    );
+
+    final students = await _db.select(_db.students).get();
+    final subjects = await _db.select(_db.subjects).get();
+    
+    // Group subjects by class
+    final subjectsByClass = <String, List<Subject>>{};
+    for (final s in subjects) {
+      subjectsByClass.putIfAbsent(s.classId, () => []).add(s);
+    }
+
+    for (final student in students) {
+      if (student.classId == null) continue;
+      final classSubjects = subjectsByClass[student.classId] ?? [];
+      
+      for (final subject in classSubjects) {
+        final total = subject.totalMarks.toDouble();
+        final obtained = total * (0.4 + (_random.nextDouble() * 0.55)); // 40% to 95%
+        
+        await _upsertOn(
+          _db.marks,
+          MarksCompanion.insert(
+            id: demoId('mark/${examId}/${student.id}/${subject.id}'),
+            schoolId: schoolId,
+            examId: examId,
+            studentId: student.id,
+            subjectId: subject.id,
+            classId: student.classId!,
+            obtainedMarks: Value(obtained),
+            totalMarks: Value(total),
+            isAbsent: const Value(false),
+            grade: Value(_calculateGrade(obtained, total)),
+            enteredBy: Value(principalUserId),
+            updatedAt: now,
+          ),
+          [_db.marks.examId, _db.marks.studentId, _db.marks.subjectId],
+        );
+      }
+    }
+  }
+
+  String _calculateGrade(double obtained, double total) {
+    if (total == 0) return '-';
+    final percentage = (obtained / total) * 100;
+    if (percentage >= 90) return 'A+';
+    if (percentage >= 80) return 'A';
+    if (percentage >= 70) return 'B';
+    if (percentage >= 60) return 'C';
+    if (percentage >= 50) return 'D';
+    return 'F';
   }
 }
