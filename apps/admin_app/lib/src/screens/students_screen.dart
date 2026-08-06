@@ -61,7 +61,7 @@ class _StudentsScreenState extends State<StudentsScreen> {
                   onChanged: (_) => setState(() {}),
                   decoration: const InputDecoration(
                     prefixIcon: Icon(Icons.search_rounded, size: 18),
-                    hintText: 'Name or student id',
+                    hintText: 'Name or Student ID',
                   ),
                 ),
               ),
@@ -243,7 +243,6 @@ class _StudentTile extends StatelessWidget {
         .firstOrNull;
 
     return ListTile(
-      onTap: onEdit,
       leading: CircleAvatar(
         backgroundColor: isActive
             ? theme.colorScheme.primaryContainer
