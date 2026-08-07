@@ -37,9 +37,9 @@ class LostItems extends Table with SyncColumns {
   /// `LostItemStatus.wire`, defaulting to `'open'`.
   TextColumn get status => text().withDefault(const Constant('open'))();
 
-  /// `ModerationState.wire`, defaulting to `'visible'`.
+  /// `ModerationState.wire`, defaulting to `'pending'`.
   TextColumn get moderation =>
-      text().withDefault(const Constant('visible'))();
+      text().withDefault(const Constant('pending'))();
 
   /// Auto-hides at `autoHideReportCount` (policy.dart).
   IntColumn get reportCount =>

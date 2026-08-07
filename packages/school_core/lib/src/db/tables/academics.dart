@@ -78,6 +78,8 @@ class Notices extends Table with SyncColumns {
 
   /// Null means the notice goes to the whole school.
   TextColumn get classId => text().named('class_id').nullable()();
+  
+  BoolColumn get isFacultyOnly => boolean().named('is_faculty_only').withDefault(const Constant(false))();
 
   TextColumn get title => text()();
   TextColumn get body => text()();

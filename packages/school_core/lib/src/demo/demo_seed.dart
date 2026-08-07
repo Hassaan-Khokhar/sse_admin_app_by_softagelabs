@@ -112,6 +112,7 @@ class DemoSeeder {
       await _seedMarks(now);
       await _seedTimetable(now);
       await _seedNotices(now);
+      await _seedLostItems(now);
     });
   }
 
@@ -622,21 +623,31 @@ class DemoSeeder {
         title: 'Mid-Term Examinations Schedule',
         body: 'The mid-term examinations for all classes will commence from the 15th of next month. Please check the timetable section for detailed subject-wise schedules. Ensure all dues are cleared before the exams.',
         priority: 'important',
+        isFacultyOnly: false,
       ),
       (
         title: 'Annual Sports Gala',
         body: 'We are excited to announce our Annual Sports Gala! Students interested in participating must register with their class incharges by Friday. Parents are warmly invited to attend the final day events.',
         priority: 'normal',
+        isFacultyOnly: false,
+      ),
+      (
+        title: 'Staff Meeting (Faculty Only)',
+        body: 'There will be a mandatory staff meeting this Thursday at 3:00 PM in the main hall to discuss the new curriculum changes.',
+        priority: 'important',
+        isFacultyOnly: true,
       ),
       (
         title: 'Winter Timings Update',
         body: 'Effective Monday, the school timings will shift to the winter schedule. Classes will start at 08:30 AM and end at 02:00 PM. Please ensure students arrive on time in proper winter uniform.',
         priority: 'urgent',
+        isFacultyOnly: false,
       ),
       (
         title: 'Parent-Teacher Meeting (PTM)',
         body: 'A Parent-Teacher Meeting will be held this Saturday from 09:00 AM to 01:00 PM to discuss the recent academic progress of students. Your attendance is highly encouraged.',
         priority: 'important',
+        isFacultyOnly: false,
       ),
     ];
 
@@ -648,9 +659,63 @@ class DemoSeeder {
           schoolId: schoolId,
           title: notice.title,
           body: notice.body,
+          isFacultyOnly: Value(notice.isFacultyOnly),
           priority: Value(notice.priority),
           publishDate: today,
           createdBy: Value(principalUserId),
+          updatedAt: now,
+        ),
+      );
+    }
+  }
+
+  Future<void> _seedLostItems(String now) async {
+    final today = encodeDate(DateTime.now());
+    
+    final items = [
+      (
+        type: 'found',
+        title: 'Earbuds',
+        description: 'Found Ronin Earbuds black colour from Cafe.',
+        location: 'Old Cafe',
+        moderation: 'visible',
+      ),
+      (
+        type: 'lost',
+        title: 'earbuds from faculty',
+        description: 'test',
+        location: 'test',
+        moderation: 'visible',
+      ),
+      (
+        type: 'lost',
+        title: 'Math Book',
+        description: 'Lost 10th grade math book with name Ali inside.',
+        location: 'Library',
+        moderation: 'pending',
+      ),
+      (
+        type: 'found',
+        title: 'Water Bottle',
+        description: 'Blue metal water bottle left near the goal post.',
+        location: 'Playground',
+        moderation: 'pending',
+      ),
+    ];
+
+    for (var i = 0; i < items.length; i++) {
+      final item = items[i];
+      await _db.into(_db.lostItems).insertOnConflictUpdate(
+        LostItemsCompanion.insert(
+          id: demoId('lost_item/$i'),
+          schoolId: schoolId,
+          type: item.type,
+          title: item.title,
+          description: Value(item.description),
+          location: Value(item.location),
+          reportedBy: principalUserId,
+          moderation: Value(item.moderation),
+          createdAt: now,
           updatedAt: now,
         ),
       );

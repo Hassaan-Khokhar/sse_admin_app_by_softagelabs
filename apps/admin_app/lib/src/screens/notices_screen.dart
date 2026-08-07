@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:school_core/school_core.dart';
+import 'package:intl/intl.dart';
 
 import '../data/app_scope.dart';
 import '../data/school_repository.dart';
@@ -17,12 +18,16 @@ class NoticesScreen extends StatefulWidget {
 class _NoticesScreenState extends State<NoticesScreen> {
   late final SchoolRepository _repo;
   late String _actor;
+  List<SchoolClass>? _classes;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     _repo = SchoolRepository(AppScope.databaseOf(context));
     _actor = AppScope.actorOf(context);
+    _repo.watchClasses().listen((classes) {
+      if (mounted) setState(() => _classes = classes);
+    });
   }
 
   @override
@@ -30,8 +35,8 @@ class _NoticesScreenState extends State<NoticesScreen> {
     final theme = Theme.of(context);
 
     return PageShell(
-      title: 'Notices',
-      subtitle: 'Posted here, on every phone at the next sync.',
+      title: 'Noticeboard',
+      subtitle: 'Post announcements and updates for students and faculty.',
       actions: [
         FilledButton.icon(
           onPressed: _compose,
@@ -40,58 +45,158 @@ class _NoticesScreenState extends State<NoticesScreen> {
         ),
       ],
       child: StreamBuilder<List<Notice>>(
-            stream: _repo.watchNotices(),
-            builder: (context, snapshot) {
-              final notices = snapshot.data ?? const [];
-              if (notices.isEmpty) {
-                return const EmptyState(
-                  icon: Icons.campaign_outlined,
-                  title: 'No notices',
-                  detail: 'Anything posted here appears on every student\'s '
-                      'phone at the next sync.',
-                );
+        stream: _repo.watchNotices(),
+        builder: (context, snapshot) {
+          final notices = snapshot.data ?? const [];
+          if (notices.isEmpty) {
+            return const EmptyState(
+              icon: Icons.campaign_outlined,
+              title: 'No notices',
+              detail: 'Anything posted here appears on every student\'s phone at the next sync.',
+            );
+          }
+          return ListView.separated(
+            padding: const EdgeInsets.all(24),
+            itemCount: notices.length,
+            separatorBuilder: (_, _) => const SizedBox(height: 16),
+            itemBuilder: (context, i) {
+              final notice = notices[i];
+              final priority = NoticePriority.tryFromWire(notice.priority);
+              
+              final isExpired = notice.expiresAt != null && 
+                  DateTime.now().isAfter(DateTime.parse(notice.expiresAt!));
+
+              Color priorityColor = theme.colorScheme.primary;
+              IconData priorityIcon = Icons.article_outlined;
+              if (priority == NoticePriority.urgent) {
+                priorityColor = theme.colorScheme.error;
+                priorityIcon = Icons.priority_high;
+              } else if (priority == NoticePriority.important) {
+                priorityColor = Colors.orange;
+                priorityIcon = Icons.flag_outlined;
               }
-              return ListView.separated(
-                itemCount: notices.length,
-                separatorBuilder: (_, _) => const Divider(height: 1),
-                itemBuilder: (context, i) {
-                  final notice = notices[i];
-                  final priority = NoticePriority.tryFromWire(notice.priority);
-                  return ListTile(
-                    leading: Icon(
-                      switch (priority) {
-                        NoticePriority.urgent => Icons.priority_high,
-                        NoticePriority.important => Icons.flag_outlined,
-                        _ => Icons.article_outlined,
-                      },
-                      color: switch (priority) {
-                        NoticePriority.urgent => theme.colorScheme.error,
-                        NoticePriority.important => Colors.orange,
-                        _ => null,
-                      },
-                    ),
-                    title: Text(notice.title),
-                    subtitle: Text(
-                      notice.body,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    trailing: Row(
-                      mainAxisSize: MainAxisSize.min,
+
+              String audienceText = 'Whole School';
+              if (notice.isFacultyOnly) {
+                audienceText = 'Faculty Only';
+              } else if (notice.classId != null && _classes != null) {
+                final c = _classes!.where((c) => c.id == notice.classId).firstOrNull;
+                if (c != null) {
+                  audienceText = 'Class ${c.displayName}';
+                }
+              }
+
+              return Opacity(
+                opacity: isExpired ? 0.6 : 1.0,
+                child: Card(
+                  elevation: 2,
+                  shadowColor: Colors.black12,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  child: Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(notice.publishDate,
-                            style: theme.textTheme.bodySmall),
-                        IconButton(
-                          tooltip: 'Remove',
-                          icon: const Icon(Icons.delete_outline, size: 18),
-                          onPressed: () => _repo.deleteNotice(notice.id),
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: priorityColor.withValues(alpha: 0.1),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(priorityIcon, color: priorityColor, size: 24),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    notice.title,
+                                    style: theme.textTheme.titleMedium?.copyWith(
+                                      fontWeight: FontWeight.bold,
+                                      decoration: isExpired ? TextDecoration.lineThrough : null,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Row(
+                                    children: [
+                                      Text(
+                                        DateFormat.yMMMd().format(DateTime.parse(notice.publishDate)),
+                                        style: theme.textTheme.bodySmall?.copyWith(color: theme.disabledColor),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                        decoration: BoxDecoration(
+                                          color: notice.isFacultyOnly 
+                                            ? Colors.purple.withValues(alpha: 0.1) 
+                                            : Colors.blue.withValues(alpha: 0.1),
+                                          borderRadius: BorderRadius.circular(4),
+                                        ),
+                                        child: Text(
+                                          audienceText,
+                                          style: TextStyle(
+                                            fontSize: 10,
+                                            fontWeight: FontWeight.bold,
+                                            color: notice.isFacultyOnly ? Colors.purple : Colors.blue,
+                                          ),
+                                        ),
+                                      ),
+                                      if (isExpired) ...[
+                                        const SizedBox(width: 8),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                          decoration: BoxDecoration(
+                                            color: Colors.grey.withValues(alpha: 0.2),
+                                            borderRadius: BorderRadius.circular(4),
+                                          ),
+                                          child: const Text(
+                                            'EXPIRED',
+                                            style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: Colors.grey),
+                                          ),
+                                        ),
+                                      ]
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                            IconButton(
+                              tooltip: 'Delete Notice',
+                              icon: const Icon(Icons.delete_outline),
+                              color: theme.colorScheme.error,
+                              onPressed: () => _repo.deleteNotice(notice.id),
+                            ),
+                          ],
                         ),
+                        const SizedBox(height: 16),
+                        Text(
+                          notice.body,
+                          style: theme.textTheme.bodyMedium?.copyWith(height: 1.5),
+                        ),
+                        if (notice.expiresAt != null) ...[
+                          const SizedBox(height: 16),
+                          Row(
+                            children: [
+                              Icon(Icons.event_busy, size: 14, color: theme.disabledColor),
+                              const SizedBox(width: 4),
+                              Text(
+                                'Expires: ${DateFormat.yMMMd().format(DateTime.parse(notice.expiresAt!))}',
+                                style: theme.textTheme.bodySmall?.copyWith(color: theme.disabledColor),
+                              ),
+                            ],
+                          ),
+                        ]
                       ],
                     ),
-                  );
-                },
+                  ),
+                ),
               );
             },
+          );
+        },
       ),
     );
   }
@@ -100,18 +205,20 @@ class _NoticesScreenState extends State<NoticesScreen> {
     final school = await _repo.school();
     if (school == null || !mounted) return;
 
-    final classes = await _repo.watchClasses().first;
+    final classes = _classes ?? [];
     final title = TextEditingController();
     final body = TextEditingController();
     var priority = NoticePriority.normal.wire;
-    String? classId;
+    String? audienceId = 'school'; // 'school', 'faculty', or classId
+    DateTime? expiresAt;
 
     if (!mounted) return;
     final saved = await showDialog<bool>(
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setLocal) => AlertDialog(
-          title: const Text('Post notice'),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+          title: const Text('Post new notice'),
           content: SizedBox(
             width: 480,
             child: Column(
@@ -125,7 +232,7 @@ class _NoticesScreenState extends State<NoticesScreen> {
                     border: OutlineInputBorder(),
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 16),
                 TextField(
                   controller: body,
                   maxLines: 4,
@@ -135,42 +242,81 @@ class _NoticesScreenState extends State<NoticesScreen> {
                     alignLabelWithHint: true,
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 16),
                 Row(
                   children: [
                     Expanded(
-                      child: DropdownButtonFormField<String?>(
-                        initialValue: classId,
+                      child: DropdownButtonFormField<String>(
+                        value: audienceId,
                         decoration: const InputDecoration(
                           labelText: 'Audience',
                           border: OutlineInputBorder(),
                         ),
                         items: [
-                          const DropdownMenuItem(
-                              value: null, child: Text('Whole school')),
+                          const DropdownMenuItem(value: 'school', child: Text('Whole school')),
+                          const DropdownMenuItem(value: 'faculty', child: Text('Faculty Only')),
                           for (final c in classes)
-                            DropdownMenuItem(
-                                value: c.id, child: Text('Class ${c.displayName}')),
+                            DropdownMenuItem(value: c.id, child: Text('Class ${c.displayName}')),
                         ],
-                        onChanged: (v) => setLocal(() => classId = v),
+                        onChanged: (v) => setLocal(() => audienceId = v),
                       ),
                     ),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: 16),
                     Expanded(
                       child: DropdownButtonFormField<String>(
-                        initialValue: priority,
+                        value: priority,
                         decoration: const InputDecoration(
                           labelText: 'Priority',
                           border: OutlineInputBorder(),
                         ),
                         items: [
                           for (final p in NoticePriority.values)
-                            DropdownMenuItem(value: p.wire, child: Text(p.wire)),
+                            DropdownMenuItem(value: p.wire, child: Text(p.wire.toUpperCase())),
                         ],
                         onChanged: (v) => setLocal(() => priority = v ?? priority),
                       ),
                     ),
                   ],
+                ),
+                const SizedBox(height: 16),
+                InkWell(
+                  onTap: () async {
+                    final date = await showDatePicker(
+                      context: context,
+                      initialDate: expiresAt ?? DateTime.now().add(const Duration(days: 7)),
+                      firstDate: DateTime.now(),
+                      lastDate: DateTime.now().add(const Duration(days: 365)),
+                    );
+                    if (date != null) {
+                      setLocal(() => expiresAt = date);
+                    }
+                  },
+                  child: InputDecorator(
+                    decoration: const InputDecoration(
+                      labelText: 'Expiry Date (Optional)',
+                      border: OutlineInputBorder(),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          expiresAt == null 
+                            ? 'No expiry set' 
+                            : DateFormat.yMMMd().format(expiresAt!),
+                          style: TextStyle(color: expiresAt == null ? Theme.of(context).disabledColor : null),
+                        ),
+                        if (expiresAt != null)
+                          IconButton(
+                            icon: const Icon(Icons.clear, size: 18),
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
+                            onPressed: () => setLocal(() => expiresAt = null),
+                          )
+                        else
+                          const Icon(Icons.calendar_today, size: 18),
+                      ],
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -190,10 +336,12 @@ class _NoticesScreenState extends State<NoticesScreen> {
     if ((saved ?? false) && title.text.trim().isNotEmpty) {
       await _repo.saveNotice(
         schoolId: school.id,
-        classId: classId,
+        classId: (audienceId != 'school' && audienceId != 'faculty') ? audienceId : null,
+        isFacultyOnly: audienceId == 'faculty',
         title: title.text.trim(),
         body: body.text.trim(),
         priority: priority,
+        expiresAt: expiresAt != null ? encodeDate(expiresAt!) : null,
         createdBy: _actor,
       );
     }

@@ -13467,6 +13467,21 @@ class $NoticesTable extends Notices with TableInfo<$NoticesTable, Notice> {
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _isFacultyOnlyMeta = const VerificationMeta(
+    'isFacultyOnly',
+  );
+  @override
+  late final GeneratedColumn<bool> isFacultyOnly = GeneratedColumn<bool>(
+    'is_faculty_only',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_faculty_only" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
   static const VerificationMeta _titleMeta = const VerificationMeta('title');
   @override
   late final GeneratedColumn<String> title = GeneratedColumn<String>(
@@ -13550,6 +13565,7 @@ class $NoticesTable extends Notices with TableInfo<$NoticesTable, Notice> {
     id,
     schoolId,
     classId,
+    isFacultyOnly,
     title,
     body,
     attachmentUrl,
@@ -13613,6 +13629,15 @@ class $NoticesTable extends Notices with TableInfo<$NoticesTable, Notice> {
       context.handle(
         _classIdMeta,
         classId.isAcceptableOrUnknown(data['class_id']!, _classIdMeta),
+      );
+    }
+    if (data.containsKey('is_faculty_only')) {
+      context.handle(
+        _isFacultyOnlyMeta,
+        isFacultyOnly.isAcceptableOrUnknown(
+          data['is_faculty_only']!,
+          _isFacultyOnlyMeta,
+        ),
       );
     }
     if (data.containsKey('title')) {
@@ -13706,6 +13731,10 @@ class $NoticesTable extends Notices with TableInfo<$NoticesTable, Notice> {
         DriftSqlType.string,
         data['${effectivePrefix}class_id'],
       ),
+      isFacultyOnly: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_faculty_only'],
+      )!,
       title: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}title'],
@@ -13771,6 +13800,7 @@ class Notice extends DataClass implements Insertable<Notice> {
 
   /// Null means the notice goes to the whole school.
   final String? classId;
+  final bool isFacultyOnly;
   final String title;
   final String body;
   final String? attachmentUrl;
@@ -13788,6 +13818,7 @@ class Notice extends DataClass implements Insertable<Notice> {
     required this.id,
     required this.schoolId,
     this.classId,
+    required this.isFacultyOnly,
     required this.title,
     required this.body,
     this.attachmentUrl,
@@ -13812,6 +13843,7 @@ class Notice extends DataClass implements Insertable<Notice> {
     if (!nullToAbsent || classId != null) {
       map['class_id'] = Variable<String>(classId);
     }
+    map['is_faculty_only'] = Variable<bool>(isFacultyOnly);
     map['title'] = Variable<String>(title);
     map['body'] = Variable<String>(body);
     if (!nullToAbsent || attachmentUrl != null) {
@@ -13843,6 +13875,7 @@ class Notice extends DataClass implements Insertable<Notice> {
       classId: classId == null && nullToAbsent
           ? const Value.absent()
           : Value(classId),
+      isFacultyOnly: Value(isFacultyOnly),
       title: Value(title),
       body: Value(body),
       attachmentUrl: attachmentUrl == null && nullToAbsent
@@ -13872,6 +13905,7 @@ class Notice extends DataClass implements Insertable<Notice> {
       id: serializer.fromJson<String>(json['id']),
       schoolId: serializer.fromJson<String>(json['school_id']),
       classId: serializer.fromJson<String?>(json['class_id']),
+      isFacultyOnly: serializer.fromJson<bool>(json['is_faculty_only']),
       title: serializer.fromJson<String>(json['title']),
       body: serializer.fromJson<String>(json['body']),
       attachmentUrl: serializer.fromJson<String?>(json['attachment_url']),
@@ -13892,6 +13926,7 @@ class Notice extends DataClass implements Insertable<Notice> {
       'id': serializer.toJson<String>(id),
       'school_id': serializer.toJson<String>(schoolId),
       'class_id': serializer.toJson<String?>(classId),
+      'is_faculty_only': serializer.toJson<bool>(isFacultyOnly),
       'title': serializer.toJson<String>(title),
       'body': serializer.toJson<String>(body),
       'attachment_url': serializer.toJson<String?>(attachmentUrl),
@@ -13910,6 +13945,7 @@ class Notice extends DataClass implements Insertable<Notice> {
     String? id,
     String? schoolId,
     Value<String?> classId = const Value.absent(),
+    bool? isFacultyOnly,
     String? title,
     String? body,
     Value<String?> attachmentUrl = const Value.absent(),
@@ -13925,6 +13961,7 @@ class Notice extends DataClass implements Insertable<Notice> {
     id: id ?? this.id,
     schoolId: schoolId ?? this.schoolId,
     classId: classId.present ? classId.value : this.classId,
+    isFacultyOnly: isFacultyOnly ?? this.isFacultyOnly,
     title: title ?? this.title,
     body: body ?? this.body,
     attachmentUrl: attachmentUrl.present
@@ -13944,6 +13981,9 @@ class Notice extends DataClass implements Insertable<Notice> {
       id: data.id.present ? data.id.value : this.id,
       schoolId: data.schoolId.present ? data.schoolId.value : this.schoolId,
       classId: data.classId.present ? data.classId.value : this.classId,
+      isFacultyOnly: data.isFacultyOnly.present
+          ? data.isFacultyOnly.value
+          : this.isFacultyOnly,
       title: data.title.present ? data.title.value : this.title,
       body: data.body.present ? data.body.value : this.body,
       attachmentUrl: data.attachmentUrl.present
@@ -13968,6 +14008,7 @@ class Notice extends DataClass implements Insertable<Notice> {
           ..write('id: $id, ')
           ..write('schoolId: $schoolId, ')
           ..write('classId: $classId, ')
+          ..write('isFacultyOnly: $isFacultyOnly, ')
           ..write('title: $title, ')
           ..write('body: $body, ')
           ..write('attachmentUrl: $attachmentUrl, ')
@@ -13988,6 +14029,7 @@ class Notice extends DataClass implements Insertable<Notice> {
     id,
     schoolId,
     classId,
+    isFacultyOnly,
     title,
     body,
     attachmentUrl,
@@ -14007,6 +14049,7 @@ class Notice extends DataClass implements Insertable<Notice> {
           other.id == this.id &&
           other.schoolId == this.schoolId &&
           other.classId == this.classId &&
+          other.isFacultyOnly == this.isFacultyOnly &&
           other.title == this.title &&
           other.body == this.body &&
           other.attachmentUrl == this.attachmentUrl &&
@@ -14024,6 +14067,7 @@ class NoticesCompanion extends UpdateCompanion<Notice> {
   final Value<String> id;
   final Value<String> schoolId;
   final Value<String?> classId;
+  final Value<bool> isFacultyOnly;
   final Value<String> title;
   final Value<String> body;
   final Value<String?> attachmentUrl;
@@ -14040,6 +14084,7 @@ class NoticesCompanion extends UpdateCompanion<Notice> {
     this.id = const Value.absent(),
     this.schoolId = const Value.absent(),
     this.classId = const Value.absent(),
+    this.isFacultyOnly = const Value.absent(),
     this.title = const Value.absent(),
     this.body = const Value.absent(),
     this.attachmentUrl = const Value.absent(),
@@ -14057,6 +14102,7 @@ class NoticesCompanion extends UpdateCompanion<Notice> {
     required String id,
     required String schoolId,
     this.classId = const Value.absent(),
+    this.isFacultyOnly = const Value.absent(),
     required String title,
     required String body,
     this.attachmentUrl = const Value.absent(),
@@ -14079,6 +14125,7 @@ class NoticesCompanion extends UpdateCompanion<Notice> {
     Expression<String>? id,
     Expression<String>? schoolId,
     Expression<String>? classId,
+    Expression<bool>? isFacultyOnly,
     Expression<String>? title,
     Expression<String>? body,
     Expression<String>? attachmentUrl,
@@ -14096,6 +14143,7 @@ class NoticesCompanion extends UpdateCompanion<Notice> {
       if (id != null) 'id': id,
       if (schoolId != null) 'school_id': schoolId,
       if (classId != null) 'class_id': classId,
+      if (isFacultyOnly != null) 'is_faculty_only': isFacultyOnly,
       if (title != null) 'title': title,
       if (body != null) 'body': body,
       if (attachmentUrl != null) 'attachment_url': attachmentUrl,
@@ -14115,6 +14163,7 @@ class NoticesCompanion extends UpdateCompanion<Notice> {
     Value<String>? id,
     Value<String>? schoolId,
     Value<String?>? classId,
+    Value<bool>? isFacultyOnly,
     Value<String>? title,
     Value<String>? body,
     Value<String?>? attachmentUrl,
@@ -14132,6 +14181,7 @@ class NoticesCompanion extends UpdateCompanion<Notice> {
       id: id ?? this.id,
       schoolId: schoolId ?? this.schoolId,
       classId: classId ?? this.classId,
+      isFacultyOnly: isFacultyOnly ?? this.isFacultyOnly,
       title: title ?? this.title,
       body: body ?? this.body,
       attachmentUrl: attachmentUrl ?? this.attachmentUrl,
@@ -14166,6 +14216,9 @@ class NoticesCompanion extends UpdateCompanion<Notice> {
     }
     if (classId.present) {
       map['class_id'] = Variable<String>(classId.value);
+    }
+    if (isFacultyOnly.present) {
+      map['is_faculty_only'] = Variable<bool>(isFacultyOnly.value);
     }
     if (title.present) {
       map['title'] = Variable<String>(title.value);
@@ -14204,6 +14257,7 @@ class NoticesCompanion extends UpdateCompanion<Notice> {
           ..write('id: $id, ')
           ..write('schoolId: $schoolId, ')
           ..write('classId: $classId, ')
+          ..write('isFacultyOnly: $isFacultyOnly, ')
           ..write('title: $title, ')
           ..write('body: $body, ')
           ..write('attachmentUrl: $attachmentUrl, ')
@@ -14381,7 +14435,7 @@ class $LostItemsTable extends LostItems
     false,
     type: DriftSqlType.string,
     requiredDuringInsert: false,
-    defaultValue: const Constant('visible'),
+    defaultValue: const Constant('pending'),
   );
   static const VerificationMeta _reportCountMeta = const VerificationMeta(
     'reportCount',
@@ -14756,7 +14810,7 @@ class LostItem extends DataClass implements Insertable<LostItem> {
   /// `LostItemStatus.wire`, defaulting to `'open'`.
   final String status;
 
-  /// `ModerationState.wire`, defaulting to `'visible'`.
+  /// `ModerationState.wire`, defaulting to `'pending'`.
   final String moderation;
 
   /// Auto-hides at `autoHideReportCount` (policy.dart).
@@ -23470,6 +23524,7 @@ typedef $$NoticesTableCreateCompanionBuilder =
       required String id,
       required String schoolId,
       Value<String?> classId,
+      Value<bool> isFacultyOnly,
       required String title,
       required String body,
       Value<String?> attachmentUrl,
@@ -23488,6 +23543,7 @@ typedef $$NoticesTableUpdateCompanionBuilder =
       Value<String> id,
       Value<String> schoolId,
       Value<String?> classId,
+      Value<bool> isFacultyOnly,
       Value<String> title,
       Value<String> body,
       Value<String?> attachmentUrl,
@@ -23539,6 +23595,11 @@ class $$NoticesTableFilterComposer
 
   ColumnFilters<String> get classId => $composableBuilder(
     column: $table.classId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isFacultyOnly => $composableBuilder(
+    column: $table.isFacultyOnly,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -23622,6 +23683,11 @@ class $$NoticesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<bool> get isFacultyOnly => $composableBuilder(
+    column: $table.isFacultyOnly,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get title => $composableBuilder(
     column: $table.title,
     builder: (column) => ColumnOrderings(column),
@@ -23688,6 +23754,11 @@ class $$NoticesTableAnnotationComposer
   GeneratedColumn<String> get classId =>
       $composableBuilder(column: $table.classId, builder: (column) => column);
 
+  GeneratedColumn<bool> get isFacultyOnly => $composableBuilder(
+    column: $table.isFacultyOnly,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<String> get title =>
       $composableBuilder(column: $table.title, builder: (column) => column);
 
@@ -23749,6 +23820,7 @@ class $$NoticesTableTableManager
                 Value<String> id = const Value.absent(),
                 Value<String> schoolId = const Value.absent(),
                 Value<String?> classId = const Value.absent(),
+                Value<bool> isFacultyOnly = const Value.absent(),
                 Value<String> title = const Value.absent(),
                 Value<String> body = const Value.absent(),
                 Value<String?> attachmentUrl = const Value.absent(),
@@ -23765,6 +23837,7 @@ class $$NoticesTableTableManager
                 id: id,
                 schoolId: schoolId,
                 classId: classId,
+                isFacultyOnly: isFacultyOnly,
                 title: title,
                 body: body,
                 attachmentUrl: attachmentUrl,
@@ -23783,6 +23856,7 @@ class $$NoticesTableTableManager
                 required String id,
                 required String schoolId,
                 Value<String?> classId = const Value.absent(),
+                Value<bool> isFacultyOnly = const Value.absent(),
                 required String title,
                 required String body,
                 Value<String?> attachmentUrl = const Value.absent(),
@@ -23799,6 +23873,7 @@ class $$NoticesTableTableManager
                 id: id,
                 schoolId: schoolId,
                 classId: classId,
+                isFacultyOnly: isFacultyOnly,
                 title: title,
                 body: body,
                 attachmentUrl: attachmentUrl,

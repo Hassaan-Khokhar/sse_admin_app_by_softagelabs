@@ -346,6 +346,7 @@ enum LostItemStatus implements WireEnum {
 /// 800 teenagers plus free text plus photos. Non-optional — see schema.sql §7.
 /// Items auto-hide once reported `autoHideReportCount` times (see policy.dart).
 enum ModerationState implements WireEnum {
+  pending('pending'),
   visible('visible'),
   hidden('hidden'),
   removed('removed');

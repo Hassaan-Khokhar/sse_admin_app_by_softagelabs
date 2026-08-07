@@ -56,6 +56,7 @@ dependencies:
   # Cloud side of sync. Note the UI must never await this — the school's
   # internet is down for hours at a time (CLAUDE.md §2).
   supabase_flutter: ^2.16.0
+  intl: ^0.20.3
 
 dev_dependencies:
   flutter_test:

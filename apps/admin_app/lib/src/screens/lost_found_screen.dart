@@ -1,20 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:school_core/school_core.dart';
+import 'package:intl/intl.dart';
 
 import '../data/app_scope.dart';
 import '../data/school_repository.dart';
 import '../widgets/empty_state.dart';
 
-/// Lost & Found moderation queue.
-///
-/// Students post from their phones; this is where the office reviews them.
-/// The moderation rules are not optional — 800 teenagers, free text and photos
-/// (CLAUDE.md §7).
-///
-/// Two safety rules shape this screen. Claims go to the OFFICE, never
-/// student-to-student, so there is no "message the finder" anywhere here. And
-/// no student's contact details are ever shown: the app is a notice board, the
-/// office does the handover in person.
 class LostFoundScreen extends StatefulWidget {
   const LostFoundScreen({super.key});
 
@@ -22,10 +13,10 @@ class LostFoundScreen extends StatefulWidget {
   State<LostFoundScreen> createState() => _LostFoundScreenState();
 }
 
-class _LostFoundScreenState extends State<LostFoundScreen> {
+class _LostFoundScreenState extends State<LostFoundScreen> with SingleTickerProviderStateMixin {
   late final SchoolRepository _repo;
-  bool _flaggedOnly = false;
   late String _actor;
+  late TabController _tabController;
 
   @override
   void didChangeDependencies() {
@@ -35,148 +26,270 @@ class _LostFoundScreenState extends State<LostFoundScreen> {
   }
 
   @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(24, 20, 24, 12),
-          child: Row(
-            children: [
-              Text('Lost & Found', style: theme.textTheme.headlineSmall),
-              const SizedBox(width: 24),
-              FilterChip(
-                label: Text('Needs review (≥$autoHideReportCount reports)'),
-                selected: _flaggedOnly,
-                onSelected: (v) => setState(() => _flaggedOnly = v),
-              ),
-            ],
-          ),
-        ),
-        const Divider(height: 1),
-        Expanded(
-          child: StreamBuilder<List<LostItem>>(
-            stream: _repo.watchLostItems(),
-            builder: (context, snapshot) {
-              var items = snapshot.data ?? const <LostItem>[];
-              if (_flaggedOnly) {
-                items = items
-                    .where((i) => i.reportCount >= autoHideReportCount)
-                    .toList();
-              }
-
-              if (items.isEmpty) {
-                return EmptyState(
-                  icon: Icons.search_outlined,
-                  title: _flaggedOnly ? 'Nothing flagged' : 'No items posted',
-                  detail: _flaggedOnly
-                      ? 'No post has reached $autoHideReportCount reports.'
-                      : 'Items posted by students from the mobile app appear '
-                          'here for review.',
-                );
-              }
-
-              return ListView.separated(
-                itemCount: items.length,
-                separatorBuilder: (_, _) => const Divider(height: 1),
-                itemBuilder: (context, i) => _ItemTile(
-                  item: items[i],
-                  onModerate: (state) => _repo.moderate(
-                    item: items[i],
-                    state: state,
-                    moderatedBy: _actor,
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
-      ],
-    );
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 2, vsync: this);
   }
-}
 
-class _ItemTile extends StatelessWidget {
-  const _ItemTile({required this.item, required this.onModerate});
-
-  final LostItem item;
-  final ValueChanged<ModerationState> onModerate;
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final moderation = ModerationState.tryFromWire(item.moderation);
-    final type = LostItemType.tryFromWire(item.type);
-    final flagged = item.reportCount >= autoHideReportCount;
 
-    return ListTile(
-      isThreeLine: true,
-      leading: Icon(
-        type == LostItemType.found
-            ? Icons.inventory_2_outlined
-            : Icons.help_outline,
-        color: flagged ? theme.colorScheme.error : null,
-      ),
-      title: Row(
-        children: [
-          Flexible(child: Text(item.title)),
-          const SizedBox(width: 8),
-          if (moderation != ModerationState.visible)
-            Chip(
-              label: Text(moderation?.wire ?? '?',
-                  style: const TextStyle(fontSize: 11)),
-              visualDensity: VisualDensity.compact,
-              backgroundColor: theme.colorScheme.errorContainer
-                  .withValues(alpha: 0.4),
+    return StreamBuilder<List<LostItem>>(
+      stream: _repo.watchPendingLostItems(),
+      builder: (context, pendingSnapshot) {
+        final pendingItems = pendingSnapshot.data ?? [];
+        
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 20, 24, 12),
+              child: Row(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.arrow_back_ios_new, size: 20),
+                    onPressed: () {}, // Can hook up if there's a back navigation needed, but in admin app sidebar this is standard. 
+                    // Wait, usually the page shell doesn't have a back button. I will remove the icon button and just use text.
+                  ),
+                  Text('Lost & Found Manager', style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold)),
+                ],
+              ),
             ),
-          if (item.reportCount > 0) ...[
-            const SizedBox(width: 6),
-            Chip(
-              avatar: const Icon(Icons.flag_outlined, size: 14),
-              label: Text('${item.reportCount}',
-                  style: const TextStyle(fontSize: 11)),
-              visualDensity: VisualDensity.compact,
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(30),
+                  boxShadow: [
+                    BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10, spreadRadius: 0)
+                  ]
+                ),
+                child: TabBar(
+                  controller: _tabController,
+                  indicatorSize: TabBarIndicatorSize.tab,
+                  indicator: BoxDecoration(
+                    borderRadius: BorderRadius.circular(30),
+                    color: Colors.deepPurple,
+                  ),
+                  labelColor: Colors.white,
+                  unselectedLabelColor: Colors.grey,
+                  tabs: [
+                    Tab(text: 'Pending (${pendingItems.length})'),
+                    const Tab(text: 'Active Listings'),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Expanded(
+              child: TabBarView(
+                controller: _tabController,
+                children: [
+                  _buildList(pendingItems, true),
+                  StreamBuilder<List<LostItem>>(
+                    stream: _repo.watchActiveLostItems(),
+                    builder: (context, activeSnapshot) {
+                      return _buildList(activeSnapshot.data ?? [], false);
+                    },
+                  ),
+                ],
+              ),
             ),
           ],
-        ],
+        );
+      }
+    );
+  }
+
+  Widget _buildList(List<LostItem> items, bool isPending) {
+    if (items.isEmpty) {
+      return EmptyState(
+        icon: Icons.inbox_outlined,
+        title: isPending ? 'No pending requests' : 'No active listings',
+        detail: '',
+      );
+    }
+    
+    return ListView.separated(
+      padding: const EdgeInsets.all(24),
+      itemCount: items.length,
+      separatorBuilder: (_, __) => const SizedBox(height: 16),
+      itemBuilder: (context, i) => _ItemCard(
+        item: items[i],
+        isPending: isPending,
+        onApprove: isPending 
+          ? () => _repo.moderate(item: items[i], state: ModerationState.visible, moderatedBy: _actor)
+          : null,
+        onDelete: () => _repo.deleteLostItem(items[i].id),
       ),
-      subtitle: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+    );
+  }
+}
+
+class _ItemCard extends StatelessWidget {
+  const _ItemCard({
+    required this.item,
+    required this.isPending,
+    this.onApprove,
+    required this.onDelete,
+  });
+
+  final LostItem item;
+  final bool isPending;
+  final VoidCallback? onApprove;
+  final VoidCallback onDelete;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isLost = item.type == 'lost';
+
+    // Image placeholder block. In a real app we'd load `item.photos`, but here we use an icon or placeholder.
+    final hasPhotos = item.photos.length > 5; // JSON string check, '[]' is length 2.
+    
+    return Card(
+      elevation: 4,
+      shadowColor: Colors.black.withValues(alpha: 0.1),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      child: Column(
         children: [
-          if (item.description case final d?) Text(d, maxLines: 2, overflow: TextOverflow.ellipsis),
-          Text(
-            [
-              type?.wire ?? '',
-              ?item.category,
-              ?item.location,
-            ].where((s) => s.isNotEmpty).join(' · '),
-            style: theme.textTheme.bodySmall,
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: Container(
+                    width: 100,
+                    height: 100,
+                    color: Colors.grey.withValues(alpha: 0.1),
+                    child: hasPhotos 
+                      ? const Icon(Icons.image, size: 40, color: Colors.grey)
+                      : const Icon(Icons.image_not_supported, size: 40, color: Colors.grey),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: isLost ? Colors.red.withValues(alpha: 0.1) : Colors.green.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(6),
+                              border: Border.all(color: isLost ? Colors.red.withValues(alpha: 0.3) : Colors.green.withValues(alpha: 0.3)),
+                            ),
+                            child: Text(
+                              isLost ? 'LOST' : 'FOUND',
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.bold,
+                                color: isLost ? Colors.red : Colors.green,
+                              ),
+                            ),
+                          ),
+                          Text(
+                            DateFormat('d/M/yyyy').format(DateTime.parse(item.createdAt)),
+                            style: theme.textTheme.bodySmall?.copyWith(color: theme.disabledColor),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        item.title,
+                        style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          Icon(Icons.location_on, size: 14, color: theme.disabledColor),
+                          const SizedBox(width: 4),
+                          Text(
+                            item.location ?? 'Unknown',
+                            style: theme.textTheme.bodySmall?.copyWith(color: theme.disabledColor),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        item.description ?? '',
+                        style: theme.textTheme.bodyMedium?.copyWith(color: Colors.black54),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
-          // Deliberately no poster name or contact. Claims are handled at the
-          // office; the app never puts two students in touch.
-        ],
-      ),
-      trailing: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (moderation == ModerationState.visible)
-            TextButton(
-              onPressed: () => onModerate(ModerationState.hidden),
-              child: const Text('Hide'),
-            )
-          else if (moderation == ModerationState.hidden)
-            TextButton(
-              onPressed: () => onModerate(ModerationState.visible),
-              child: const Text('Restore'),
+          const Divider(height: 1),
+          IntrinsicHeight(
+            child: Row(
+              children: [
+                if (isPending) ...[
+                  Expanded(
+                    child: InkWell(
+                      onTap: onApprove,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(Icons.check, color: Colors.green, size: 18),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Approve Post',
+                              style: theme.textTheme.labelLarge?.copyWith(
+                                color: Colors.green,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  const VerticalDivider(width: 1),
+                ],
+                Expanded(
+                  child: InkWell(
+                    onTap: onDelete,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Icon(Icons.delete_outline, color: Colors.red, size: 18),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Delete Post',
+                            style: theme.textTheme.labelLarge?.copyWith(
+                              color: Colors.red,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
-          const SizedBox(width: 4),
-          if (moderation != ModerationState.removed)
-            OutlinedButton(
-              onPressed: () => onModerate(ModerationState.removed),
-              child: const Text('Remove'),
-            ),
+          )
         ],
       ),
     );

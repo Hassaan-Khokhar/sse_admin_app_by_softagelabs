@@ -241,6 +241,7 @@ class SchoolRepository {
     required String schoolId,
     String? id,
     String? classId,
+    bool isFacultyOnly = false,
     required String title,
     required String body,
     String priority = 'normal',
@@ -255,6 +256,7 @@ class SchoolRepository {
         id: rowId,
         schoolId: schoolId,
         classId: Value(classId),
+        isFacultyOnly: Value(isFacultyOnly),
         title: title,
         body: body,
         priority: Value(priority),
@@ -271,12 +273,22 @@ class SchoolRepository {
 
   // ── lost & found ──────────────────────────────────────────────────────────
 
-  Stream<List<LostItem>> watchLostItems() {
+  Stream<List<LostItem>> watchActiveLostItems() {
     final query = _db.select(_db.lostItems)
-      ..where((i) => i.deletedAt.isNull())
+      ..where((i) => i.deletedAt.isNull() & i.moderation.equals('visible'))
       ..orderBy([(i) => OrderingTerm.desc(i.createdAt)]);
     return query.watch();
   }
+
+  Stream<List<LostItem>> watchPendingLostItems() {
+    final query = _db.select(_db.lostItems)
+      ..where((i) => i.deletedAt.isNull() & i.moderation.equals('pending'))
+      ..orderBy([(i) => OrderingTerm.asc(i.createdAt)]);
+    return query.watch();
+  }
+
+  Future<void> deleteLostItem(String id) =>
+      _writer.tombstone(table: _db.lostItems, rowId: id);
 
   /// Sets an item's moderation state.
   ///

@@ -464,6 +464,7 @@ CREATE TABLE notices (
     id              UUID PRIMARY KEY,
     school_id       UUID NOT NULL REFERENCES schools(id),
     class_id        UUID REFERENCES classes(id),     -- NULL = whole school
+    is_faculty_only BOOLEAN NOT NULL DEFAULT false,
     title           TEXT NOT NULL,
     body            TEXT NOT NULL,
     attachment_url  TEXT,
@@ -500,8 +501,8 @@ CREATE TABLE lost_items (
                     CHECK (status IN ('open','claimed','resolved','expired')),
 
     -- moderation: 800 teenagers + free text + photos. Non-optional.
-    moderation      TEXT NOT NULL DEFAULT 'visible'
-                    CHECK (moderation IN ('visible','hidden','removed')),
+    moderation      TEXT NOT NULL DEFAULT 'pending'
+                    CHECK (moderation IN ('pending','visible','hidden','removed')),
     report_count    INT NOT NULL DEFAULT 0,     -- auto-hide at 3
     moderated_by    UUID REFERENCES app_users(id),
 
