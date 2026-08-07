@@ -92,9 +92,59 @@ class _NoticesScreenState extends State<NoticesScreen> {
                   elevation: 2,
                   shadowColor: Colors.black12,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                  child: Padding(
-                    padding: const EdgeInsets.all(20),
-                    child: Column(
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(16),
+                    onTap: () {
+                      showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                          title: Text(notice.title),
+                          content: SizedBox(
+                            width: 400,
+                            child: SingleChildScrollView(
+                              child: Column(
+                                mainAxisSize: MainAxisSize.min,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Icon(priorityIcon, color: priorityColor, size: 20),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        'Posted on ${DateFormat.yMMMd().format(DateTime.parse(notice.publishDate))}',
+                                        style: theme.textTheme.bodySmall?.copyWith(color: theme.disabledColor),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    notice.body,
+                                    style: theme.textTheme.bodyMedium?.copyWith(height: 1.5, fontSize: 16),
+                                  ),
+                                  if (notice.expiresAt != null) ...[
+                                    const SizedBox(height: 16),
+                                    Text(
+                                      'Expires on ${DateFormat.yMMMd().format(DateTime.parse(notice.expiresAt!))}',
+                                      style: theme.textTheme.bodySmall?.copyWith(color: theme.disabledColor),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            ),
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context),
+                              child: const Text('Close'),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Row(
