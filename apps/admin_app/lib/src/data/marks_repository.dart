@@ -209,4 +209,34 @@ class MarksRepository {
       ),
     );
   }
+
+  /// Fetches a student's full academic history (all marks across all exams).
+  Stream<List<StudentReportItem>> watchStudentReport(String studentId) {
+    final query = _db.select(_db.marks).join([
+      innerJoin(_db.exams, _db.exams.id.equalsExp(_db.marks.examId)),
+      innerJoin(_db.subjects, _db.subjects.id.equalsExp(_db.marks.subjectId)),
+    ])..where(_db.marks.studentId.equals(studentId) & _db.marks.deletedAt.isNull());
+    
+    return query.watch().map((rows) {
+      return rows.map((row) {
+        return StudentReportItem(
+          exam: row.readTable(_db.exams),
+          subject: row.readTable(_db.subjects),
+          mark: row.readTable(_db.marks),
+        );
+      }).toList();
+    });
+  }
+}
+
+class StudentReportItem {
+  final Exam exam;
+  final Subject subject;
+  final Mark mark;
+  
+  StudentReportItem({
+    required this.exam,
+    required this.subject,
+    required this.mark,
+  });
 }

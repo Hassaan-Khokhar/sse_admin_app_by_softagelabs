@@ -178,9 +178,20 @@ class _TimetableScreenState extends State<TimetableScreen> {
                   ),
                 TableRow(
                   children: [
-                    InkWell(
-                      onTap: () => setState(() => _periods++),
-                      child: const _HeaderCell('+ Add'),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.remove, size: 20),
+                          tooltip: 'Remove last period',
+                          onPressed: _periods > 1 ? () => setState(() => _periods--) : null,
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.add, size: 20),
+                          tooltip: 'Add period',
+                          onPressed: () => setState(() => _periods++),
+                        ),
+                      ],
                     ),
                     for (final day in _days) const SizedBox(height: 66),
                   ]
@@ -349,21 +360,48 @@ class _HeaderCell extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     Widget child = Padding(
-      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
-      child: Text(
-        text,
-        textAlign: TextAlign.center,
-        style: TextStyle(
-          fontWeight: FontWeight.w700, 
-          fontSize: 13,
-          color: isHoliday ? theme.colorScheme.primary : null,
-        ),
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            text,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontWeight: FontWeight.w700, 
+              fontSize: 13,
+              color: isHoliday ? theme.colorScheme.primary : null,
+            ),
+          ),
+          if (onTap != null) ...[
+            const SizedBox(height: 4),
+            Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  isHoliday ? Icons.beach_access : Icons.event_available,
+                  size: 14,
+                  color: isHoliday ? theme.colorScheme.primary : theme.disabledColor,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  isHoliday ? 'Holiday' : 'Workday',
+                  style: TextStyle(
+                    fontSize: 10,
+                    color: isHoliday ? theme.colorScheme.primary : theme.disabledColor,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ],
       ),
     );
 
     if (onTap != null) {
       child = InkWell(
         onTap: onTap,
+        borderRadius: BorderRadius.circular(4),
         child: child,
       );
     }

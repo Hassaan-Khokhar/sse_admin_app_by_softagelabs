@@ -6,6 +6,7 @@ import '../data/attendance_repository.dart';
 import '../data/marks_repository.dart';
 import '../widgets/empty_state.dart';
 import '../widgets/page_shell.dart';
+import '../widgets/student_report_dialog.dart';
 
 /// Exams and mark entry.
 class MarksScreen extends StatefulWidget {
@@ -418,43 +419,49 @@ class _MarkRow extends StatelessWidget {
     final grade = mark?.grade;
     final obtained = mark?.obtainedMarks;
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-      child: Row(
-        children: [
-          SizedBox(
-            width: 40,
-            child: Text('${student.rollNo ?? '—'}',
-                style: TextStyle(color: theme.disabledColor)),
-          ),
-          Expanded(child: Text(student.fullName)),
-          SizedBox(
-            width: 100,
-            child: Text(
-              isAbsent
-                  ? 'Absent'
-                  : obtained != null
-                      ? '${obtained.toStringAsFixed(0)} / ${totalMarks.toStringAsFixed(0)}'
-                      : '— / ${totalMarks.toStringAsFixed(0)}',
-              textAlign: TextAlign.right,
-              style: TextStyle(
-                color: isAbsent ? theme.colorScheme.error : null,
-                fontStyle: isAbsent || obtained == null ? FontStyle.italic : null,
+    return InkWell(
+      onTap: () => showDialog(
+        context: context,
+        builder: (_) => StudentReportDialog(student: student),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+        child: Row(
+          children: [
+            SizedBox(
+              width: 40,
+              child: Text('${student.rollNo ?? '—'}',
+                  style: TextStyle(color: theme.disabledColor)),
+            ),
+            Expanded(child: Text(student.fullName)),
+            SizedBox(
+              width: 100,
+              child: Text(
+                isAbsent
+                    ? 'Absent'
+                    : obtained != null
+                        ? '${obtained.toStringAsFixed(0)} / ${totalMarks.toStringAsFixed(0)}'
+                        : '— / ${totalMarks.toStringAsFixed(0)}',
+                textAlign: TextAlign.right,
+                style: TextStyle(
+                  color: isAbsent ? theme.colorScheme.error : null,
+                  fontStyle: isAbsent || obtained == null ? FontStyle.italic : null,
+                ),
               ),
             ),
-          ),
-          const SizedBox(width: 24),
-          SizedBox(
-            width: 44,
-            child: Text(
-              grade ?? '—',
-              textAlign: TextAlign.center,
-              style: theme.textTheme.titleMedium?.copyWith(
-                color: grade == failingGrade ? theme.colorScheme.error : null,
+            const SizedBox(width: 24),
+            SizedBox(
+              width: 44,
+              child: Text(
+                grade ?? '—',
+                textAlign: TextAlign.center,
+                style: theme.textTheme.titleMedium?.copyWith(
+                  color: grade == failingGrade ? theme.colorScheme.error : null,
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

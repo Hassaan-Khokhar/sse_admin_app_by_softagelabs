@@ -110,6 +110,8 @@ class DemoSeeder {
       await _seedTeacherAttendance(now);
       await _seedFees(now);
       await _seedMarks(now);
+      await _seedTimetable(now);
+      await _seedNotices(now);
     });
   }
 
@@ -369,6 +371,7 @@ class DemoSeeder {
         section: section,
         displayName: '$grade-$section',
         room: Value('Room ${grade}0$section'),
+        classTeacherId: Value(demoId('teacher/${_random.nextInt(demoTeachers.length)}')),
         updatedAt: now,
       ),
       [
@@ -391,6 +394,7 @@ class DemoSeeder {
               name: subject.name,
               code: Value(subject.code),
               icon: Value(subject.icon),
+              teacherId: Value(demoId('teacher/${_random.nextInt(demoTeachers.length)}')),
               sortOrder: Value(i),
               updatedAt: now,
             ),
@@ -557,5 +561,99 @@ class DemoSeeder {
     if (percentage >= 60) return 'C';
     if (percentage >= 50) return 'D';
     return 'F';
+  }
+
+  Future<void> _seedTimetable(String now) async {
+    final classes = await _db.select(_db.classes).get();
+    final subjects = await _db.select(_db.subjects).get();
+    
+    final subjectsByClass = <String, List<Subject>>{};
+    for (final s in subjects) {
+      subjectsByClass.putIfAbsent(s.classId, () => []).add(s);
+    }
+
+    for (final schoolClass in classes) {
+      final classSubjects = subjectsByClass[schoolClass.id] ?? [];
+      if (classSubjects.isEmpty) continue;
+
+      for (var day = 1; day <= 6; day++) { // Mon to Sat
+        for (var period = 1; period <= 8; period++) {
+          final startMins = 8 * 60 + (period - 1) * 40;
+          final endMins = startMins + 40;
+          
+          final startTime = '${(startMins ~/ 60).toString().padLeft(2, '0')}:${(startMins % 60).toString().padLeft(2, '0')}';
+          final endTime = '${(endMins ~/ 60).toString().padLeft(2, '0')}:${(endMins % 60).toString().padLeft(2, '0')}';
+          
+          String slotType = SlotType.lesson.wire;
+          String? subjectId;
+          
+          if (period == 3 && day < 6) {
+            slotType = SlotType.breakTime.wire;
+          } else {
+            subjectId = classSubjects[_random.nextInt(classSubjects.length)].id;
+          }
+
+          await _upsertOn(
+            _db.timetableSlots,
+            TimetableSlotsCompanion.insert(
+              id: demoId('timetable/${schoolClass.id}/$day/$period'),
+              schoolId: schoolId,
+              classId: schoolClass.id,
+              subjectId: Value(subjectId),
+              teacherId: Value(subjectId != null ? demoId('teacher/${_random.nextInt(demoTeachers.length)}') : null),
+              dayOfWeek: day,
+              periodNo: period,
+              startTime: startTime,
+              endTime: endTime,
+              slotType: Value(slotType),
+              updatedAt: now,
+            ),
+            [_db.timetableSlots.classId, _db.timetableSlots.dayOfWeek, _db.timetableSlots.periodNo],
+          );
+        }
+      }
+    }
+  }
+
+  Future<void> _seedNotices(String now) async {
+    final today = encodeDate(DateTime.now());
+    final notices = [
+      (
+        title: 'Mid-Term Examinations Schedule',
+        body: 'The mid-term examinations for all classes will commence from the 15th of next month. Please check the timetable section for detailed subject-wise schedules. Ensure all dues are cleared before the exams.',
+        priority: 'important',
+      ),
+      (
+        title: 'Annual Sports Gala',
+        body: 'We are excited to announce our Annual Sports Gala! Students interested in participating must register with their class incharges by Friday. Parents are warmly invited to attend the final day events.',
+        priority: 'normal',
+      ),
+      (
+        title: 'Winter Timings Update',
+        body: 'Effective Monday, the school timings will shift to the winter schedule. Classes will start at 08:30 AM and end at 02:00 PM. Please ensure students arrive on time in proper winter uniform.',
+        priority: 'urgent',
+      ),
+      (
+        title: 'Parent-Teacher Meeting (PTM)',
+        body: 'A Parent-Teacher Meeting will be held this Saturday from 09:00 AM to 01:00 PM to discuss the recent academic progress of students. Your attendance is highly encouraged.',
+        priority: 'important',
+      ),
+    ];
+
+    for (var i = 0; i < notices.length; i++) {
+      final notice = notices[i];
+      await _db.into(_db.notices).insertOnConflictUpdate(
+        NoticesCompanion.insert(
+          id: demoId('notice/$i'),
+          schoolId: schoolId,
+          title: notice.title,
+          body: notice.body,
+          priority: Value(notice.priority),
+          publishDate: today,
+          createdBy: Value(principalUserId),
+          updatedAt: now,
+        ),
+      );
+    }
   }
 }
