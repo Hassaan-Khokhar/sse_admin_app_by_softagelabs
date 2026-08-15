@@ -56,7 +56,7 @@ class _AdminAppState extends State<AdminApp> {
       sync: widget.sync,
       auth: _auth,
       child: MaterialApp(
-        title: 'SSE School — Admin',
+        title: 'IGS School System',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.light(),
         home: AnimatedBuilder(

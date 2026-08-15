@@ -54,25 +54,40 @@ class DemoSeeder {
   /// `insertOnConflictUpdate` only resolves conflicts on the primary key. But
   /// most of these tables also carry a natural unique key — attendance is
   /// `UNIQUE(student_id, date)`, challans are `UNIQUE(student_id, month,
-  /// year)` — and a row created through the app has a random UUIDv7 id, while
-  /// the seeder generates a deterministic UUIDv5 one.
+  /// year, title)` — and a row created through the app has a random UUIDv7 id,
+  /// while the seeder generates a deterministic UUIDv5 one.
   ///
-  /// So re-seeding after using the app hits the natural key with a different
-  /// id, `ON CONFLICT(id)` does not apply, and the insert fails outright. That
-  /// is not hypothetical: generating August challans from the Fees screen and
-  /// then re-seeding does exactly this.
+  /// There is a second failure mode: after a seed, the app may modify a row's
+  /// natural key columns (e.g. the Fees screen regenerates challans with
+  /// `title = null` where the seeder used `'Tuition'`). On the next seed the
+  /// deterministic id already exists but the natural key has changed, so
+  /// `ON CONFLICT(natural_key)` does not fire and the PK constraint fails
+  /// instead.
   ///
-  /// Targeting the natural key makes re-seeding idempotent regardless of where
-  /// the existing row came from.
+  /// To handle both directions the method first deletes any row with the same
+  /// deterministic id, then inserts with `ON CONFLICT` on the natural key.
+  /// That makes re-seeding idempotent regardless of what the app did in
+  /// between.
   Future<void> _upsertOn<T extends Table, D extends DataClass>(
     TableInfo<T, D> table,
     Insertable<D> row,
-    List<Column<Object>> naturalKey,
-  ) =>
-      _db.into(table).insert(
-            row,
-            onConflict: DoUpdate<T, D>((_) => row, target: naturalKey),
-          );
+    List<Column<Object>> naturalKey, {
+    String? id,
+  }) async {
+    // When the caller supplies the deterministic id, delete any stale row
+    // whose PK matches but whose natural key may have drifted.
+    if (id != null) {
+      await _db.customUpdate(
+        'DELETE FROM ${table.actualTableName} WHERE id = ?',
+        variables: [Variable(id)],
+        updates: {table},
+      );
+    }
+    await _db.into(table).insert(
+          row,
+          onConflict: DoUpdate<T, D>((_) => row, target: naturalKey),
+        );
+  }
 
   static const _classSpecs = [
     (grade: 9, section: 'A', students: 18),
@@ -126,7 +141,7 @@ class DemoSeeder {
     await _db.into(_db.schools).insertOnConflictUpdate(
           SchoolsCompanion.insert(
             id: schoolId,
-            name: 'Sunrise School of Excellence',
+            name: 'Islamabad Grammar School',
             address: const Value('Model Town, Lahore'),
             phone: const Value('042-35880000'),
             updatedAt: now,
@@ -153,7 +168,7 @@ class DemoSeeder {
             schoolId: schoolId,
             role: UserRole.superAdmin.wire,
             fullName: 'Principal',
-            email: const Value('principal@sunrise.edu.pk'),
+            email: const Value('principal@igs.edu.pk'),
             updatedAt: now,
           ),
         );
@@ -225,10 +240,13 @@ class DemoSeeder {
         final serial = student.admissionNo.split('-').last;
         final monthKey = period.month.toString().padLeft(2, '0');
 
+        final challanId =
+            demoId('challan/${student.id}/${period.year}-$monthKey');
+
         await _upsertOn(
           _db.feeChallans,
           FeeChallansCompanion.insert(
-                id: demoId('challan/${student.id}/${period.year}-$monthKey'),
+                id: challanId,
                 schoolId: schoolId,
                 studentId: student.id,
                 classId: student.classId!,
@@ -262,6 +280,7 @@ class DemoSeeder {
             _db.feeChallans.year,
             _db.feeChallans.title,
           ],
+          id: challanId,
         );
       }
     }

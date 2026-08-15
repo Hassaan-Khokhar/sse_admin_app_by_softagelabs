@@ -90,12 +90,12 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "com.softagelabs" "\0"
-            VALUE "FileDescription", "sse_admin_app" "\0"
+            VALUE "FileDescription", "IGS School System" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "sse_admin_app" "\0"
+            VALUE "InternalName", "igs_school_system" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2026 com.softagelabs. All rights reserved." "\0"
-            VALUE "OriginalFilename", "sse_admin_app.exe" "\0"
-            VALUE "ProductName", "sse_admin_app" "\0"
+            VALUE "OriginalFilename", "igs_school_system.exe" "\0"
+            VALUE "ProductName", "IGS School System" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

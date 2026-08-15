@@ -98,16 +98,28 @@ class SyncEngine {
       if (ops == null || ops.isEmpty) continue;
 
       try {
-        // Upsert is idempotent on the primary key, so a retry after a lost
-        // response is harmless — it rewrites the same row with the same
-        // values. That stands in for the `sync_ops` ledger in the prototype.
+        // Deduplicate: if the same row was edited multiple times between
+        // pushes the outbox holds several entries with the same id. Postgres
+        // rejects a batch upsert that touches the same PK twice ("ON CONFLICT
+        // DO UPDATE command cannot affect row a second time"). Keep only the
+        // latest payload per rowId (highest seq); still delete ALL seqs on
+        // success so the older entries don't retry forever.
+        final allSeqs = ops.map((op) => op.seq).toList();
+        final deduped = <String, _PendingOp>{};
+        for (final op in ops) {
+          final existing = deduped[op.rowId];
+          if (existing == null || op.seq > existing.seq) {
+            deduped[op.rowId] = op;
+          }
+        }
+
         await client.from(table).upsert(
-              ops.map((op) => op.payload).toList(),
+              deduped.values.map((op) => op.payload).toList(),
               onConflict: 'id',
             );
 
         await (_db.delete(_db.outbox)
-              ..where((o) => o.seq.isIn(ops.map((op) => op.seq))))
+              ..where((o) => o.seq.isIn(allSeqs)))
             .go();
 
         confirmed += ops.length;

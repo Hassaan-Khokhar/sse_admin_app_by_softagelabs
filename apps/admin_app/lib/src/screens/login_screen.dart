@@ -18,7 +18,7 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final _email = TextEditingController(text: 'principal@sunrise.edu.pk');
+  final _email = TextEditingController(text: 'principal@igs.edu.pk');
   final _password = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
@@ -59,7 +59,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       size: 44, color: theme.colorScheme.primary),
                   const SizedBox(height: 16),
                   Text(
-                    'Sunrise School of Excellence',
+                    'Islamabad Grammar School',
                     textAlign: TextAlign.center,
                     style: theme.textTheme.titleLarge,
                   ),

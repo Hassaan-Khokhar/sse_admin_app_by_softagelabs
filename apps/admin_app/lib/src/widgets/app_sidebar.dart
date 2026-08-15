@@ -93,7 +93,7 @@ class _Crest extends StatelessWidget {
           ),
           const SizedBox(height: 7),
           const Text(
-            'SSE',
+            'IGS',
             style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w800,

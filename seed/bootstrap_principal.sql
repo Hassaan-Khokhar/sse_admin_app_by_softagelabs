@@ -19,18 +19,18 @@
 
 
 -- ----------------------------------------------------------------------------
---  STEP 1 — create the login account (dashboard UI, not SQL)
+--  STEP 1 — create the login account
 -- ----------------------------------------------------------------------------
 --
+--  OPTION A (Direct SQL): Run `seed/add_principal_igs.sql` directly in Supabase SQL editor.
+--
+--  OPTION B (Dashboard UI):
 --  Supabase dashboard → Authentication → Users → "Add user" → "Create new user"
 --
---      Email     : principal@sunrise.edu.pk
---      Password  : (choose one — you will type it into the app)
+--      Email     : principal@igs.edu.pk (or principal@sunrise.edu.pk)
+--      Password  : 12345 (or your chosen password)
 --      ☑ Auto Confirm User      ← tick this, or login fails on an
 --                                 unconfirmed-email error
---
---  Passwords must be hashed by Supabase Auth, which is why this cannot be
---  done in SQL. Everything below IS SQL.
 --
 --  Use a real password even for a prototype. This account can read every
 --  student's marks, fees and guardian phone numbers.
@@ -49,7 +49,7 @@ BEGIN;
 INSERT INTO schools (id, name, address, phone, updated_at)
 VALUES (
     'e05fe3c2-de30-513c-9fbb-125aefaa707a',
-    'Sunrise School of Excellence',
+    'Islamabad Grammar School',
     'Model Town, Lahore',
     '042-35880000',
     now()
@@ -84,7 +84,7 @@ SELECT
     true,
     now()
 FROM auth.users u
-WHERE u.email = 'principal@sunrise.edu.pk'
+WHERE u.email IN ('principal@igs.edu.pk', 'principal@sunrise.edu.pk')
 ON CONFLICT (id) DO UPDATE
     SET role = 'super_admin', is_active = true, updated_at = now();
 
