@@ -81,7 +81,8 @@ void main() {
     });
 
     test('lost_items.moderation', () {
-      expectWires(ModerationState.values, ['visible', 'hidden', 'removed']);
+      expectWires(
+          ModerationState.values, ['pending', 'visible', 'hidden', 'removed']);
     });
 
     test('item_claims.status', () {

@@ -4,27 +4,30 @@
 --  Role: super_admin (Principal)
 --  Password: 12345
 --
+--  This creates a SEPARATE school from the sunrise demo data.
+--  The IGS principal sees only their own school's data via RLS.
+--
 --  Safe to run more than once (idempotent).
 -- ============================================================================
 
 -- Step 1: Ensure pgcrypto extension is available for bcrypt password hashing
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
--- Step 2: Create auth.users entry directly with password '12345'
--- (Or if already created, updates the password and confirms email)
+-- Step 2: Create auth.users entry + school + app_users
 DO $$
 DECLARE
     v_user_id uuid;
-    v_school_id uuid := 'e05fe3c2-de30-513c-9fbb-125aefaa707a';
+    v_school_id uuid := '8fb9763b-b4eb-43ce-b426-26bb8484aaac';
+    v_year_id  uuid := 'cc891916-6fc2-40a2-bd4a-580df4c8b44c';
     v_email text := 'principal@igs.edu.pk';
     v_password text := '12345';
 BEGIN
-    -- Check if user already exists in auth.users
+    -- ── Auth account ────────────────────────────────────────────────────
     SELECT id INTO v_user_id FROM auth.users WHERE email = v_email;
 
     IF v_user_id IS NULL THEN
         v_user_id := gen_random_uuid();
-        
+
         INSERT INTO auth.users (
             instance_id,
             id,
@@ -67,40 +70,28 @@ BEGIN
         WHERE id = v_user_id;
     END IF;
 
-    -- Ensure School exists
+    -- ── School (separate from sunrise demo) ─────────────────────────────
     INSERT INTO public.schools (id, name, address, phone, updated_at)
     VALUES (
         v_school_id,
         'Islamabad Grammar School',
-        'Model Town, Lahore',
-        '042-35880000',
+        'Islamabad',
+        '051-1234567',
         now()
     )
     ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name, updated_at = now();
 
-    -- Ensure Academic Year exists
+    -- ── Academic Year ───────────────────────────────────────────────────
     INSERT INTO public.academic_years
         (id, school_id, name, start_date, end_date, is_current, updated_at)
     VALUES (
-        '497e12ee-ade7-534b-a1ef-29298e30b3bb',
+        v_year_id,
         v_school_id,
         '2026-2027', '2026-04-01', '2027-03-31', true, now()
     )
     ON CONFLICT (id) DO UPDATE SET is_current = true, updated_at = now();
 
-    -- Ensure Seed Principal (for foreign keys in historical seed data)
-    INSERT INTO public.app_users (id, school_id, role, full_name, is_active, updated_at)
-    VALUES (
-        'fcbad286-6a85-5964-ab97-a79282ee21c7',
-        v_school_id,
-        'super_admin',
-        'Principal (seed)',
-        true,
-        now()
-    )
-    ON CONFLICT (id) DO UPDATE SET is_active = true, updated_at = now();
-
-    -- Link auth account to app_users as super_admin
+    -- ── Link auth account to app_users as super_admin ───────────────────
     INSERT INTO public.app_users (id, school_id, role, email, full_name, is_active, updated_at)
     VALUES (
         v_user_id,
@@ -112,15 +103,25 @@ BEGIN
         now()
     )
     ON CONFLICT (id) DO UPDATE
-        SET role = 'super_admin', email = v_email, is_active = true, updated_at = now();
+        SET role = 'super_admin',
+            school_id = v_school_id,
+            email = v_email,
+            is_active = true,
+            updated_at = now();
 
 END $$;
 
--- Verify account creation
+
+-- ============================================================================
+--  VERIFY — expect 1 row with the new school_id
+-- ============================================================================
 SELECT a.full_name,
        a.role,
        a.email,
+       a.school_id,
+       s.name AS school_name,
        (u.id IS NOT NULL) AS linked_to_auth
 FROM public.app_users a
 LEFT JOIN auth.users u ON u.id = a.id
+LEFT JOIN public.schools s ON s.id = a.school_id
 WHERE a.email = 'principal@igs.edu.pk';

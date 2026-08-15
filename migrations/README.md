@@ -99,6 +99,22 @@ This migration adds the column and replaces the old
 `(student_id, month, year, COALESCE(title, ''))` — NULL titles (regular
 tuition) still can't duplicate, while named custom challans get their own slot.
 
+## 005 · lost_items moderation 'pending' value
+
+The Dart enum `ModerationState` and the current `schema.sql` both include
+`'pending'` as the first value and the column's DEFAULT. But the live Supabase
+database was provisioned from an older schema where the CHECK constraint only
+listed `('visible','hidden','removed')`.
+
+Every seeded `lost_items` row with `moderation = 'pending'` therefore failed on
+push:
+
+    PostgrestException: new row for relation "lost_items" violates
+    check constraint "lost_items_moderation_check"
+
+This migration drops the old constraint and re-adds it with the full four-value
+set.
+
 ---
 
 ## Message for the student-app dev
